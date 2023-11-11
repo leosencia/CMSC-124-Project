@@ -2,6 +2,7 @@
 # TO-DO
    **[Project Specs](https://classroom.google.com/c/NjE5NzM5ODA3MzY3/p/NjM3NDcxMDQwMTE3/details)**
 1. Lexical Analyzer - Breaks down a program file into tokens, separating comments and whitespaces.
+   **[Lexemes](https://docs.google.com/document/d/1WMG3ybYsAUXqvCtDHWNipT4i9G0zoB1TIA62uGWgPmY/edit?usp=sharing)**
 2. Syntax Analyzer
 3. Semantic Analysis
 
