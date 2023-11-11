@@ -1,5 +1,6 @@
 
 # TO-DO
+   **[Project Specs](https://classroom.google.com/c/NjE5NzM5ODA3MzY3/p/NjM3NDcxMDQwMTE3/details)**
 1. Lexical Analyzer
 2. Syntax Analyzer
 3. Semantic Analysis
