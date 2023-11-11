@@ -1,0 +1,5 @@
+HAI
+  VISIBLE "HAI WORLD!!!1!"
+  I HAS A var2
+  I HAS A var ITZ "hello"
+KTHXBYE
