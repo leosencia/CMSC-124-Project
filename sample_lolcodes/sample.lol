@@ -1,0 +1,14 @@
+HAI
+WAZZUP
+    I HAS A chuWanning ITZ "Chu Wanning" BTW YARN
+    I HAS A MoRan ITZ 4.5 BTW FLOAT
+    I HAS A xu3Meng ITZ -9 BTW INT
+    I HAS A bool ITZ FAIL BTW TROOF
+    I HAS A 5ame ITZ WIN BTW SHOULD RAISE EXCEPTION
+BUHBYE
+
+VISIBLE chuWanning
+SUM OF MoRan AN xu3Meng BTW ADD
+BOTH OF WIN AN bool
+SMOOSH "Two lifetimes" AN "AND BTW they belong to u"
+KTHXBYE

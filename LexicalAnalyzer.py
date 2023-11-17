@@ -4,20 +4,36 @@ import re
 class LexicalAnalyzer:
     lin_num = 1
     def tokenize(self, code):
+        #doesn't catch wrong vars
         rules = [
                 ('START', r'^HAI'),
                 ('END', r'KTHXBYE$'),
-                ('COMMENT', r' BTW .*'),
+                ('WAZZUP', r'WAZZUP'),
+                ('BUHBYE', r'BUHBYE'),
+                ('COMMENT', r' ?BTW .*'),
                 ('VAR_DEC', r'I HAS A'),
                 ('ITZ', r'ITZ'),
+                ('IT', r'IT'),
+                ('CONCAT', r'SMOOSH'),
                 ('PRINT', r'VISIBLE'),
-                ('STRING', r'"[^"]*"'),
-                ('VARIABLE', r'[a-zA-Z]\w*'),
+                ('TYPECAST', r'MAEK'),
+                ('RECAST', r'IS NOW A'),
+                ('BOOL_OPER', r'(BOTH OF|EITHER OF|WON OF|NOT|ALL OF|ANY OF)'),
+                ('MATH', r'(SUM OF|DIFF OF|QUOSHUNT OF|MOD OF|BIGGR OF|SMALLR OF)'),
+                ('COMPARISON', r'(BOTH SAEM|DIFFRINT)'),
+                ('AN', r'AN'),
+                ('YARN', r'"[^"]*"'),
+                ('VARIABLE', r' [a-zA-Z]\w*'),
                 ('FLOAT_CONST', r'-?\d(\d)*\.\d(\d)*'),
+                ('TROOF', r'(WIN|FAIL)'),
                 ('INTEGER_CONST', r'-?\d(\d)*'),
+                ('DATA_TYPE', r'(NOOB|TROOF|NUMBAR|NUMBR|YARN)'),
+                ('NEWLINE', r'\n'),         # NEW LINE
+                ('SKIP', r'[ \t]+'),
+                ('MISMATCH', r'.'),
                 ]
         tokens_join = '|'.join('(?P<%s>%s)' % x for x in rules)
-        # print(code + "==========")
+        # print(tokens_join)
         lin_start = 0
 
         # Lists of output for the program
