@@ -22,6 +22,6 @@ if __name__ == '__main__':
 
     print('\nRecognize Tokens: ', token)
     print('\nRecognize Lexems: ', lexeme)
-    # print('\nRecognize row: ', row)
-    # print('\nRecognize col: ', column)
+    print('\nRecognize row: ', row)
+    print('\nRecognize col: ', column)
 
