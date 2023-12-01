@@ -1,0 +1,16 @@
+<program>               ::= HAI <declaration_region> <statements> KTHXBYE
+<declaration_region>    ::= WAZZUP <var_declaration> BUHBYE | ε
+<var_declaration>       ::= <var_dec> <comments> <var_declaration> | <var_dec>
+<var_dec>               ::= I HAS A <variable> | I HAS A <variable> ITZ <literal>
+<function>              ::= HOW IZ I <function_name> [<parameters_list>] 
+                            BTW <function_body> IF U SAY SO
+<function_name>     ????::= <>
+<parameters_list>       ::= YR <parameter_name> <AN_YR_parameter>
+<parameter_name>        ::= <variable>
+<AN_YR_parameter>       ::= AN <parameters_list> | ε
+<function_body>     ????::= <> <function_body> | <function_return>
+<function_return>       ::= FOUND YR <expression> | ε
+<function_call>         ::= I IZ <function_name> [YR <expression> <AN_YR_fxcall_param>] MKAY
+<AN_YR_fxcall_param>    ::= AN YR <expression> <AN_YR_fxcall_param> | ε
+
+
