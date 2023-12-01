@@ -14,12 +14,20 @@ class SyntaxAnalyzer:
                 if(tokens[i] == 'COMMENT'):
                     i+=1
                     continue
+
+                if tokens[i] == 'WAZZUP':
+                    isVarDec(tokens, i, lexeme, row)
+
                 i = statement(tokens[i], tokens, lexeme, row, i)
+                if i >= len(tokens):
+                    break
             if i == len(tokens):
                 raise RuntimeError('End of program not found')   
         else:
             raise RuntimeError('Start of program not found')
-        
+def isVarDec(tokens, row, col, i):
+        print("yes")
+
 def statement(token, tokens, lexeme, row, i):
     tline = []
     line = []

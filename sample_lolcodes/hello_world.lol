@@ -1,4 +1,8 @@
 HAI
+  WAZZUP
+    I HAS A var2 ITZ -4.60
+    I HAS A var ITZ "hello"
+  BUHBYE
   VISIBLE "HAI WORLD!!!1!" BTW THIS IS YEYEYE
   BTW I HAS A var2 ITZ -4.60
   BTW I HAS A var ITZ "hello"
