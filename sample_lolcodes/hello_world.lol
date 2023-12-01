@@ -1,6 +1,6 @@
 HAI
   VISIBLE "HAI WORLD!!!1!" BTW THIS IS YEYEYE
-  I HAS A var2 ITZ -4.60
-  I HAS A var ITZ "hello"
-  VISIBLE var
+  BTW I HAS A var2 ITZ -4.60
+  BTW I HAS A var ITZ "hello"
+  VISIBLE "TESTINGGG"
 KTHXBYE

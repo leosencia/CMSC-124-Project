@@ -1,10 +1,11 @@
 from Buffer import Buffer
 from LexicalAnalyzer import LexicalAnalyzer
-
+from SyntaxAnalyzer import SyntaxAnalyzer
 
 if __name__ == '__main__':
     Buffer = Buffer()
     Analyzer = LexicalAnalyzer()
+    Syntax = SyntaxAnalyzer()
 
     # Lists for every list returned list from the function tokenize
     token = []
@@ -19,9 +20,10 @@ if __name__ == '__main__':
         lexeme += lex
         row += lin
         column += col
-
+    
     print('\nRecognize Tokens: ', token)
     print('\nRecognize Lexems: ', lexeme)
-    # print('\nRecognize row: ', row)
-    # print('\nRecognize col: ', column)
+    print('\nRecognize row: ', row)
+    print('\nRecognize col: ', column)
+    Syntax.program(token, lexeme, row)
 

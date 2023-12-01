@@ -23,7 +23,7 @@ class LexicalAnalyzer:
                 ('COMPARISON', r'(BOTH SAEM|DIFFRINT)'),
                 ('AN', r'AN'),
                 ('YARN', r'"[^"]*"'),
-                ('VARIABLE', r' [a-zA-Z]\w*'),
+                ('VARIABLE', r' [a-zA-Z]\w* ?'),
                 ('FLOAT_CONST', r'-?\d(\d)*\.\d(\d)*'),
                 ('TROOF', r'(WIN|FAIL)'),
                 ('INTEGER_CONST', r'-?\d(\d)*'),
