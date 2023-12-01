@@ -1,21 +1,54 @@
+import re
+
 class SyntaxAnalyzer:
-    def isVarDec(tokens, row, col, i):
+    _vars = {}
+    
+    def program(self, tokens, lexeme, row):
+        i = 0
+        
+        while(tokens[i] == 'COMMENT'):
+            i += 1
+        if tokens[i] == 'START':        #encountered start of program
+            i += 1
+            while tokens[i] != 'END' and i < len(tokens):
+                if(tokens[i] == 'COMMENT'):
+                    i+=1
+                    continue
+
+                if tokens[i] == 'WAZZUP':
+                    isVarDec(tokens, i, lexeme, row)
+
+                i = statement(tokens[i], tokens, lexeme, row, i)
+                if i >= len(tokens):
+                    break
+            if i == len(tokens):
+                raise RuntimeError('End of program not found')   
+        else:
+            raise RuntimeError('Start of program not found')
+def isVarDec(tokens, row, col, i):
         print("yes")
 
-    def func(self, tokens, row, col):
-        i = 0
-        word = tokens[i]
-        while word == 'COMMENT':
-            i += 1
+def statement(token, tokens, lexeme, row, i):
+    tline = []
+    line = []
+    rowNum = row[i]
+    # print(rowNum)
+    while rowNum == row[i]:
+        tline.append(tokens[i])
+        line.append(lexeme[i])
+        i += 1
+    
+    if tline[0] == 'PRINT':
+        printLine(line, tline)
+    return i
 
-        if word == 'START':
-            i += 1 #line2
-            word = tokens[i]
-            if word == 'WAZZUP':
-                #enter variable declaration region
-                while word != 'BUHBYE':
-                    i += 1
-                    isVarDec(tokens, row, col)                    
-                    
-        else:
-            raise RuntimeError('%r unexpected on line %d' % (word, row[i]))
+def printLine(line, tline):
+    #assume muna na YARN lang ung priniprint
+
+    string = ""
+    for i in range(0, len(line)):
+        if tline[i] != 'PRINT' and tline[i] != 'COMMENT':
+            if tline[i] == 'YARN':
+                string = string + line[i][1:-1]
+    
+    print(string)
