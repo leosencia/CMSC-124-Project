@@ -24,9 +24,9 @@ class LexicalAnalyzer:
                 ('AN', r'AN'),
                 ('YARN', r'"[^"]*"'),
                 ('VARIABLE', r' [a-zA-Z]\w* ?'),
-                ('FLOAT_CONST', r'-?\d(\d)*\.\d(\d)*'),
+                ('NUMBAR', r'-?\d(\d)*\.\d(\d)*'), #float const
                 ('TROOF', r'(WIN|FAIL)'),
-                ('INTEGER_CONST', r'-?\d(\d)*'),
+                ('NUMBR', r'-?\d(\d)*'), #int
                 ('DATA_TYPE', r'(NOOB|TROOF|NUMBAR|NUMBR|YARN)'),
                 ('NEWLINE', r'\n'),         # NEW LINE
                 ('SKIP', r'[ \t]+'),
