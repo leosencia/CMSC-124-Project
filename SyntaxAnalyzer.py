@@ -11,6 +11,7 @@ class SyntaxAnalyzer:
             i += 1
 
         if tokens[i] == 'START':        #encountered start of program
+            print("==== PROGRAM START! === \n")
             i += 1
             while tokens[i] != 'END' and i < len(tokens):
                 if(tokens[i] == 'COMMENT'):
@@ -67,9 +68,7 @@ def storeVariable(tline, line, rowNum):
         raise RuntimeError('Expected VARIABLE NAME on line %d' % (rowNum))
 
     if i >= maxlength:
-        type = None
-        value = None
-        vars.append(Variable(varName, type, value))
+        vars.append(Variable(varName, 'NOOB', None))
         return
 
     if tline[i] == 'ITZ':
@@ -106,23 +105,92 @@ def statement(tokens, lexeme, row, i):
 
 def printLine(line, tline):
     #assume muna na YARN lang ung priniprint
-
     string = ""
     for i in range(0, len(line)):
         if tline[i] != 'PRINT' and tline[i] != 'COMMENT':
             if tline[i] == 'YARN':
                 string = string + line[i][1:-1]
             elif tline[i] == 'VARIABLE':
-                string = string + searchVarValue(line[i])
+                value, type = searchVarValue(line[i])
+                if type != 'YARN':
+                    value = typeCasting(value, type, 'YARN', i)
+                else:
+                    value = value[1:-1]
+                string = string + value
+            elif tline[i] == 'NUMBR' or tline[i] == 'NUMBAR':
+                value = typeCasting(line[i], tline[i], 'YARN', i)
+                string = string + value
+            elif tline[i] == 'TROOF':
+                value = line[i]
+                string = string + value
+            else:
+                raise RuntimeError("Type %r cannot be printed" % (tline[i]))
     print(string)
 
 def searchVarValue(name):
     global vars
     for variable in vars:
-
         if variable.name == name:
-            return variable.value
+            return variable.value, variable.dataType
     raise RuntimeError('Variable %r does not exist' % (name))
+
+def typeCasting(value, type1, type2, rowNum):
+    if type1 == 'NOOB':
+        if type2 == 'TROOF':
+            return False
+        else:
+            raise RuntimeError('Encountered error in line %d, cannot typecast NOOB to %r' % (rowNum, type2))
+    elif type1 == 'NUMBR' or type1 == 'NUMBAR':
+        match type2:
+            case 'NUMBAR':
+                return float(value)
+            case 'NUMBR':
+                return int(value)
+            case 'YARN':
+                return str(value)
+            case 'TROOF':
+                if value == 0:
+                    return 'FAIL'
+                else:
+                    return 'WIN'
+            case _:
+                raise RuntimeError('Encountered error in line %d, cannot typecast NUMBR to %r' % (rowNum, type2))
+    elif type1 == 'TROOF':
+        match type2:
+            case 'NUMBAR':
+                if value == 'WIN':
+                    return 1.0
+                else:
+                    return 0
+            case 'NUMBR':
+                if value == 'WIN':
+                    return 1
+                else:
+                    return 0
+            case 'YARN':
+                return value
+            case _:
+                raise RuntimeError('Encoutnered error in line %d, cannot typecast TROOF to %r' % (rowNum, type2))
+    elif type1 == 'YARN':
+        value = value[1:-1]
+        match type2:
+            case 'NUMBR':
+                if bool(re.search(r'-?\d(\d)*', value)):
+                    return int(value)
+                else:
+                    raise RuntimeError('Encountered error in line %d, cannot typecast YARN to %r' % (rowNum, type2))
+            case 'NUMBAR':
+                if bool(re.search(r'-?\d(\d)*\.\d(\d)*', value)):
+                    return float(value)
+                else:
+                    raise RuntimeError('Encountered error in line %d, cannot typecast YARN to %r' % (rowNum, type2))
+            case 'TROOF':
+                if value == "":
+                    return 'FAIL'
+                else:
+                    return 'WIN'
+            case _:
+                 raise RuntimeError('Encountered error in line %d, cannot typecast YARN to %r' % (rowNum, type2))
 
 def printVariables():
     global vars

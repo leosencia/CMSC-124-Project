@@ -23,11 +23,11 @@ class LexicalAnalyzer:
                 ('COMPARISON', r'(BOTH SAEM|DIFFRINT)'),
                 ('AN', r'AN'),
                 ('YARN', r'"[^"]*"'),
-                ('VARIABLE', r' [a-zA-Z]\w* ?'),
                 ('NUMBAR', r'-?\d(\d)*\.\d(\d)*'), #float const
                 ('TROOF', r'(WIN|FAIL)'),
                 ('NUMBR', r'-?\d(\d)*'), #int
                 ('DATA_TYPE', r'(NOOB|TROOF|NUMBAR|NUMBR|YARN)'),
+                ('VARIABLE', r'[a-zA-Z]\w* ?'),
                 ('NEWLINE', r'\n'),         # NEW LINE
                 ('SKIP', r'[ \t]+'),
                 ('MISMATCH', r'.'),
