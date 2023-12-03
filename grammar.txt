@@ -13,4 +13,14 @@
 <function_call>         ::= I IZ <function_name> [YR <expression> <AN_YR_fxcall_param>] MKAY
 <AN_YR_fxcall_param>    ::= AN YR <expression> <AN_YR_fxcall_param> | ε
 
-
+<boolop_region>         ::= <boolop_8> | <boolop>
+<boolop>                ::= <boolop_and> | <boolop_or> | <boolop_xor> | <boolop_not> | <boolval>
+<boolop_and>            ::= BOTH OF <boolop> AN <boolop>
+<boolop_or>             ::= EITHER OF <boolop> AN <boolop>
+<boolop_xor>            ::= WON OF <boolop> AN <boolop>
+<boolop_not>            ::= NOT <boolop>
+<boolop_8>              ::= <boolop_8and> | <boolop_8or>
+<boolop_8and>           ::= ALL OF <boolop> <boolop_8extend> MKAY
+<boolop_8or>            ::= ANY OF <boolop> <boolop_8extend> MKAY
+<boolop_8extend>        ::= AN <boolop> <boolop_8extend> | ε
+<boolval>               ::= WIN | FAIL | <variable> | <boolop>

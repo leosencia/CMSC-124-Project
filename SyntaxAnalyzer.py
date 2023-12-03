@@ -86,6 +86,7 @@ def storeVariable(tline, line, rowNum):
         return
     else:
         raise RuntimeError('Variable declaration can only be to a YARN, TROOF, NOOB etch')
+    vars.append(Variable('IT', 'NOOB', ""))
 
 def statement(tokens, lexeme, row, i):
     tline = []
@@ -101,7 +102,79 @@ def statement(tokens, lexeme, row, i):
         printLine(line, tline)
     elif tline[0] == 'VAR_DEC':
         raise RuntimeError("Unexpected variable declaration at line %d" % (rowNum))
+    elif tline[0] == 'BOOL_OPER':
+        print(boolOpRegion(line, tline, 0, rowNum))
     return i
+
+def boolOp(line, tline, i, rowNum):
+    if tline[i] == 'BOOL_OPER':
+        opAddress = i
+        boolQ = []
+        i+=1
+        i, boolQ0 = boolOp(line, tline, i, rowNum)
+        boolQ.append(boolQ0)
+        if line[opAddress] == 'NOT':
+            if(boolQ[0] == 'WIN'):
+                return i, 'FAIL'
+            else:
+                return i, 'WIN'
+        i+=1
+        if tline[i] != 'AN':
+            raise RuntimeError("Expected AN at line %d" % (rowNum))
+        i+=1
+        i, boolQ1 = boolOp(line, tline, i, rowNum)
+        boolQ.append(boolQ1)
+        #print(boolQ)
+        if line[opAddress] == 'BOTH OF':
+            if(boolQ[0] == 'WIN' and boolQ[1] == 'WIN'):
+                return i, 'WIN'
+            else:
+                return i, 'FAIL'
+        elif line[opAddress] == 'EITHER OF':
+            if(boolQ[0] == 'WIN' or boolQ[1] == 'WIN'):
+                return i, 'WIN'
+            else:
+                return i, 'FAIL'
+        elif line[opAddress] == 'WON OF':
+            if(boolQ[0] != boolQ[1] and (boolQ[0] == 'WIN' or boolQ[1] == 'WIN')):
+                return i, 'WIN'
+            else:
+                return i, 'FAIL'
+    elif tline[i] == 'VARIABLE':
+        if i < len(line)-1:
+            line[i] = line[i][:-1]
+        value, type = searchVarValue(line[i])
+        if type != 'TROOF':
+            value = typeCasting(value, type, 'TROOF', rowNum)
+        return i, value
+    elif tline[i] == 'TROOF':
+        return i, line[i]
+    else:
+        raise RuntimeError("Unexpected %r at line %d" % (line[i], rowNum))
+
+def boolOpRegion(line, tline, i, rowNum):
+    #print(line)
+    if line[i] == 'ALL OF' or line[i] == 'ANY OF':
+        if line[i] == 'ALL OF':
+            initCond = 'WIN'
+            terminateCond = 'WIN'
+        elif line[i] == 'ANY OF':
+            terminateCond = 'FAIL'
+            initCond = 'FAIL'
+        i+=1
+        while i < len(line) and initCond==terminateCond:
+            initCond = boolOp(line, tline, i, rowNum)[1]
+            #print(initCond, terminateCond)
+            i+=1
+            if line[i] == 'AN':
+                i+=1
+            else:
+                raise RuntimeError("Expected AN at line %d" % (rowNum))
+            if line[i] == 'MKAY':
+                break
+        return initCond
+    else:
+        return boolOp(line, tline, i, rowNum)[1]
 
 def printLine(line, tline):
     #assume muna na YARN lang ung priniprint
