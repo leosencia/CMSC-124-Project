@@ -2,6 +2,7 @@ HAI
 
   BTW ==
   BOTH SAEM 1 AN 1
+  VISIBLE "BOTH SAEM 1 AN 1 IS " IT
   BOTH SAEM 1 AN 2
   
   BTW !=

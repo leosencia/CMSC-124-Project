@@ -2,7 +2,7 @@ import re
 from Variable import Variable
 from collections import deque
 
-vars = []
+vars = [Variable("IT", "NOOB", "")]
 
 
 class SyntaxAnalyzer:
@@ -102,6 +102,7 @@ def storeVariable(tline, line, rowNum):
         )
 
 def statement(tokens, lexeme, row, i):
+    global vars
     tline = []
     line = []
     rowNum = row[i]
@@ -116,11 +117,17 @@ def statement(tokens, lexeme, row, i):
     elif tline[0] == "VAR_DEC":
         raise RuntimeError("Unexpected variable declaration at line %d" % (rowNum))
     elif tline[0] == "BOOL_OPER":
-        print(boolOpRegion(line, tline, 0, rowNum))
+        storeVariables("IT", "TROOF", boolOpRegion(line, tline, 0, rowNum))
+        # print(boolOpRegion(line, tline, 0, rowNum))
     elif tline[0] == "COMPARISON":
-        print(comparison(line, tline, 0, rowNum))
+        storeVariables("IT", "TROOF", comparison(line, tline, 0, rowNum))
+        # print(comparison(line, tline, 0, rowNum))
     elif tline[0] == "MATH":
-        print(mathOp(line, tline, 0, rowNum))
+        value = mathOp(line, tline, 0, rowNum)
+        if isinstance(value, int):
+            storeVariables("IT", "NUMBR", value)
+        else:
+            storeVariables("IT", "NUMBAR", value)
     elif tline[0] == "INPUT":
         getInput(line, tline, 0, rowNum)
     return i
@@ -465,7 +472,7 @@ def boolOp(line, tline, i, rowNum):
                 return i, "FAIL"
     elif tline[i] == "VARIABLE":
         if i < len(line) - 1:
-            line[i] = line[i][:-1]
+            line[i] = line[i].strip()
         value, type = searchVarValue(line[i])
         if type != "TROOF":
             value = typeCasting(value, type, "TROOF", rowNum)
