@@ -104,7 +104,189 @@ def statement(tokens, lexeme, row, i):
         raise RuntimeError("Unexpected variable declaration at line %d" % (rowNum))
     elif tline[0] == 'BOOL_OPER':
         print(boolOpRegion(line, tline, 0, rowNum))
+    elif tline[0] == 'COMPARISON':
+        print(comparison(line, tline, 0, rowNum))
     return i
+
+def comparison(line, tline, i, rowNum):
+    compQ = []
+    #print(line)
+    if line[i] == 'BOTH SAEM': 
+        i+=1
+        if tline[i] == 'NUMBR' or tline[i] == 'NUMBAR':
+            compQ.append([tline[i],line[i]])
+            i+=1
+        elif tline[i] == 'VARIABLE':
+            value, type = searchVarValue(line[i])
+            compQ.append([type,value])
+            i+=1
+        else:
+            raise RuntimeError("Expected NUMBR, NUMBAR, or VARIABLE at line %d" % (rowNum))
+        if tline[i] != 'AN':
+            raise RuntimeError("Expected AN at line %d" % (rowNum))
+        i+=1
+        if line[i] == 'BIGGR OF' or line[i] == 'SMALLR OF':
+            compQ.append(line[i])
+            i+=1
+            if tline[i] == 'NUMBR' or tline[i] == 'NUMBAR':
+                compQ.append([tline[i],line[i]])
+                i+=1
+            elif tline[i] == 'VARIABLE':
+                value, type = searchVarValue(line[i])
+                compQ.append([type,value])
+                i+=1
+            else:
+                raise RuntimeError("Expected NUMBR, NUMBAR, or VARIABLE at line %d" % (rowNum))
+            if compQ[0][1] != compQ[2][1]:
+                raise RuntimeError("Value mismatch - operand 1 and 2 (%r and %r) must be same" % (compQ[0][1], compQ[2][1]))
+            if tline[i] != 'AN':
+                raise RuntimeError("Expected AN at line %d" % (rowNum))
+            i+=1
+            if tline[i] == 'NUMBR' or tline[i] == 'NUMBAR':
+                compQ.append([tline[i],line[i]])
+                i+=1
+            elif tline[i] == 'VARIABLE':
+                value, type = searchVarValue(line[i])
+                compQ.append([type,value])
+                i+=1
+            else:
+                raise RuntimeError("Expected NUMBR, NUMBAR, or VARIABLE at line %d" % (rowNum))
+        elif tline[i] == 'NUMBR' or tline[i] == 'NUMBAR':
+            compQ.append([tline[i],line[i]])
+            i+=1
+        elif tline[i] == 'VARIABLE':
+            value, type = searchVarValue(line[i])
+            compQ.append([type,value])
+            i+=1
+        else:
+            raise RuntimeError("Expected NUMBR, NUMBAR, VARIABLE, BIGGR OF, or SMALLR OF at line %d" % (rowNum))
+        
+        #print(compQ)
+        if compQ[1] == 'BIGGR OF':
+            if compQ[2][0] != compQ[3][0]:
+                raise RuntimeError("Type mismatch - cannot compare %r and %r" % (compQ[0][0], compQ[1][0]))
+            if compQ[2][0] == 'NUMBR':
+                if int(compQ[2][1]) >= int(compQ[3][1]):
+                    return 'WIN'
+                else:
+                    return 'FAIL'
+            elif compQ[2][0] == 'NUMBAR':
+                if float(compQ[2][1]) >= float(compQ[3][1]):
+                    return 'WIN'
+                else:
+                    return 'FAIL'
+            else:
+                raise RuntimeError("Unexpected type %r" % (compQ[2][0]))
+        elif compQ[1] == 'SMALLR OF':
+            if compQ[2][0] != compQ[3][0]:
+                raise RuntimeError("Type mismatch - cannot compare %r and %r" % (compQ[0][0], compQ[1][0]))
+            if compQ[2][0] == 'NUMBR':
+                if int(compQ[2][1]) <= int(compQ[3][1]):
+                    return 'WIN'
+                else:
+                    return 'FAIL'
+            elif compQ[2][0] == 'NUMBAR':
+                if float(compQ[2][1]) <= float(compQ[3][1]):
+                    return 'WIN'
+                else:
+                    return 'FAIL'
+            else:
+                raise RuntimeError("Unexpected type %r" % (compQ[2][0]))
+        else:
+            if compQ[0][0] != compQ[1][0]:
+                raise RuntimeError("Type mismatch - cannot compare %r and %r" % (compQ[0][0], compQ[1][0]))
+            if compQ[0][1] == compQ[1][1]:
+                return 'WIN'
+            else:
+                return 'FAIL'
+    elif line[i] == 'DIFFRINT':
+        i+=1
+        if tline[i] == 'NUMBR' or tline[i] == 'NUMBAR':
+            compQ.append([tline[i],line[i]])
+            i+=1
+        elif tline[i] == 'VARIABLE':
+            value, type = searchVarValue(line[i])
+            compQ.append([type,value])
+            i+=1
+        else:
+            raise RuntimeError("Expected NUMBR, NUMBAR, or VARIABLE at line %d" % (rowNum))
+        if tline[i] != 'AN':
+            raise RuntimeError("Expected AN at line %d" % (rowNum))
+        i+=1
+        if line[i] == 'BIGGR OF' or line[i] == 'SMALLR OF':
+            compQ.append(line[i])
+            i+=1
+            if tline[i] == 'NUMBR' or tline[i] == 'NUMBAR':
+                compQ.append([tline[i],line[i]])
+                i+=1
+            elif tline[i] == 'VARIABLE':
+                value, type = searchVarValue(line[i])
+                compQ.append([type,value])
+                i+=1
+            else:
+                raise RuntimeError("Expected NUMBR, NUMBAR, or VARIABLE at line %d" % (rowNum))
+            if compQ[0][1] != compQ[2][1]:
+                raise RuntimeError("Value mismatch on line %d (%r and %r) must be same" % (rowNum, compQ[0][1], compQ[2][1]))
+            if tline[i] != 'AN':
+                raise RuntimeError("Expected AN at line %d" % (rowNum))
+            i+=1
+            if tline[i] == 'NUMBR' or tline[i] == 'NUMBAR':
+                compQ.append([tline[i],line[i]])
+                i+=1
+            elif tline[i] == 'VARIABLE':
+                value, type = searchVarValue(line[i])
+                compQ.append([type,value])
+                i+=1
+            else:
+                raise RuntimeError("Expected NUMBR, NUMBAR, or VARIABLE at line %d" % (rowNum))
+        elif tline[i] == 'NUMBR' or tline[i] == 'NUMBAR':
+            compQ.append([tline[i],line[i]])
+            i+=1
+        elif tline[i] == 'VARIABLE':
+            value, type = searchVarValue(line[i])
+            compQ.append([type,value])
+            i+=1
+        else:
+            raise RuntimeError("Expected NUMBR, NUMBAR, VARIABLE, BIGGR OF, or SMALLR OF at line %d" % (rowNum))
+        
+        #print(compQ)
+        if compQ[1] == 'BIGGR OF':
+            if compQ[2][0] != compQ[3][0]:
+                raise RuntimeError("Type mismatch - cannot compare %r and %r" % (compQ[0][0], compQ[1][0]))
+            if compQ[2][0] == 'NUMBR':
+                if int(compQ[3][1]) >= int(compQ[2][1]):
+                    return 'WIN'
+                else:
+                    return 'FAIL'
+            elif compQ[2][0] == 'NUMBAR':
+                if float(compQ[3][1]) >= float(compQ[2][1]):
+                    return 'WIN'
+                else:
+                    return 'FAIL'
+            else:
+                raise RuntimeError("Unexpected type %r" % (compQ[2][0]))
+        elif compQ[1] == 'SMALLR OF':
+            if compQ[2][0] != compQ[3][0]:
+                raise RuntimeError("Type mismatch - cannot compare %r and %r" % (compQ[0][0], compQ[1][0]))
+            if compQ[2][0] == 'NUMBR':
+                if int(compQ[3][1]) <= int(compQ[2][1]):
+                    return 'WIN'
+                else:
+                    return 'FAIL'
+            elif compQ[2][0] == 'NUMBAR':
+                if float(compQ[3][1]) <= float(compQ[2][1]):
+                    return 'WIN'
+                else:
+                    return 'FAIL'
+            else:
+                raise RuntimeError("Unexpected type %r" % (compQ[2][0]))
+        else:
+            if compQ[0][0] != compQ[1][0]:
+                raise RuntimeError("Type mismatch - cannot compare %r and %r" % (compQ[0][0], compQ[1][0]))
+            if compQ[0][1] != compQ[1][1]:
+                return 'WIN'
+            else:
+                return 'FAIL'    
 
 def boolOp(line, tline, i, rowNum):
     if tline[i] == 'BOOL_OPER':
