@@ -62,14 +62,12 @@ def isVarDec(tokens, lexeme, row, i):
             raise RuntimeError("Encountered end of file")
     return i
 
-
 def storeVariable(tline, line, rowNum):
     global vars
-
     i = 1
     maxlength = len(tline)
     if tline[i] == "VARIABLE":
-        varName = line[i][:-1]
+        varName = line[i].strip()
         i += 1
     else:
         raise RuntimeError("Expected VARIABLE NAME on line %d" % (rowNum))
@@ -84,7 +82,7 @@ def storeVariable(tline, line, rowNum):
         raise RuntimeError("Expected 'ITZ' on line %d" % (rowNum))
 
     if i >= maxlength:
-        raise RuntimeError("Encountered end of file!")
+        raise RuntimeError("Variable must have a value!")
 
     if (
         tline[i] == "NOOB"
@@ -102,8 +100,6 @@ def storeVariable(tline, line, rowNum):
         raise RuntimeError(
             "Variable declaration can only be to a YARN, TROOF, NOOB etch"
         )
-    vars.append(Variable("IT", "NOOB", ""))
-
 
 def statement(tokens, lexeme, row, i):
     tline = []
@@ -125,8 +121,18 @@ def statement(tokens, lexeme, row, i):
         print(comparison(line, tline, 0, rowNum))
     elif tline[0] == "MATH":
         print(mathOp(line, tline, 0, rowNum))
+    elif tline[0] == "INPUT":
+        getInput(line, tline, 0, rowNum)
     return i
 
+def getInput(line, tline, i, rowNum):
+    i += 1
+    if tline[i] == 'VARIABLE':
+        varName = line[i]
+        inputSTR = input("")
+        storeVariables(varName, "YARN", inputSTR)
+    else:
+        raise RuntimeError("Error in line %d, expected VARIABLE instead of %r" % (rowNum, line[i]))
 
 def comparison(line, tline, i, rowNum):
     compQ = []
@@ -350,7 +356,6 @@ def comparison(line, tline, i, rowNum):
             else:
                 return "FAIL"
 
-
 # function for parsing prefix notation math operations
 def parse(tokens):
     if not tokens:
@@ -503,20 +508,19 @@ def boolOpRegion(line, tline, i, rowNum):
         else:
             return k
 
-
 def printLine(line, tline):
     # assume muna na YARN lang ung priniprint
     string = ""
     for i in range(0, len(line)):
         if tline[i] != "PRINT" and tline[i] != "COMMENT":
             if tline[i] == "YARN":
-                string = string + line[i][1:-1]
+                string = string + line[i].replace("\"", "")
             elif tline[i] == "VARIABLE":
                 value, type = searchVarValue(line[i])
                 if type != "YARN":
                     value = typeCasting(value, type, "YARN", i)
                 else:
-                    value = value[1:-1]
+                    value = value.strip()
                 string = string + value
             elif tline[i] == "NUMBR" or tline[i] == "NUMBAR":
                 value = typeCasting(line[i], tline[i], "YARN", i)
@@ -528,14 +532,14 @@ def printLine(line, tline):
                 raise RuntimeError("Type %r cannot be printed" % (tline[i]))
     print(string)
 
-
 def searchVarValue(name):
     global vars
+    name = name.strip()
     for variable in vars:
         if variable.name == name:
             return variable.value, variable.dataType
+    
     raise RuntimeError("Variable %r does not exist" % (name))
-
 
 def typeCasting(value, type1, type2, rowNum):
     if type1 == "NOOB":
@@ -613,7 +617,6 @@ def typeCasting(value, type1, type2, rowNum):
                     % (rowNum, type2)
                 )
 
-
 def printVariables():
     global vars
     for variable in vars:
@@ -621,3 +624,11 @@ def printVariables():
         print(variable.dataType)
         print(variable.value)
         print("")
+
+def storeVariables(varName, type, newVal):
+    global vars
+    for variable in vars:
+        if variable.name == varName:
+            variable.dataType = type
+            variable.value = newVal
+    

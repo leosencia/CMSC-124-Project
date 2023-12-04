@@ -15,6 +15,7 @@ class LexicalAnalyzer:
             ("BUHBYE", r"BUHBYE"),
             ("COMMENT", r" ?BTW .*"),
             ("VAR_DEC", r"I HAS A"),
+            ("INPUT", r"GIMMEH"),
             ("ITZ", r"ITZ"),
             ("IT", r"IT"),
             ("CONCAT", r"SMOOSH"),
