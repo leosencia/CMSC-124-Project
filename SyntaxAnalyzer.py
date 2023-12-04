@@ -306,7 +306,7 @@ def boolOp(line, tline, i, rowNum):
         i+=1
         i, boolQ1 = boolOp(line, tline, i, rowNum)
         boolQ.append(boolQ1)
-        #print(boolQ)
+        # print(boolQ)
         if line[opAddress] == 'BOTH OF':
             if(boolQ[0] == 'WIN' and boolQ[1] == 'WIN'):
                 return i, 'WIN'
@@ -330,9 +330,10 @@ def boolOp(line, tline, i, rowNum):
             value = typeCasting(value, type, 'TROOF', rowNum)
         return i, value
     elif tline[i] == 'TROOF':
+        #print(i, line[i])
         return i, line[i]
     else:
-        raise RuntimeError("Unexpected %r at line %d" % (line[i], rowNum))
+        raise RuntimeError("Unexpected %r at line %d, %d" % (line[i], rowNum, i))
 
 def boolOpRegion(line, tline, i, rowNum):
     #print(line)
@@ -344,19 +345,27 @@ def boolOpRegion(line, tline, i, rowNum):
             terminateCond = 'FAIL'
             initCond = 'FAIL'
         i+=1
-        while i < len(line) and initCond==terminateCond:
-            initCond = boolOp(line, tline, i, rowNum)[1]
-            #print(initCond, terminateCond)
-            i+=1
+        while i < len(line):
+            if initCond==terminateCond:
+                i, initCond = boolOp(line, tline, i, rowNum)
+                i+=1
             if line[i] == 'AN':
                 i+=1
-            else:
-                raise RuntimeError("Expected AN at line %d" % (rowNum))
-            if line[i] == 'MKAY':
+            elif tline[i] == 'BOOL_OPER' or tline[i] == 'TROOF' or tline[i] == 'VARIABLE':
+                i+=1
+            elif line[i] == 'MKAY':
                 break
+            else:
+                raise RuntimeError("Expected AN at line %d, %d but encountered %r" % (rowNum, i, line[i]))
+        if i!=len(line) and tline[i] != 'COMMENT':
+            raise RuntimeError("Unexpected %r in line %d" % (line[i+1],rowNum))
         return initCond
     else:
-        return boolOp(line, tline, i, rowNum)[1]
+        j, k = boolOp(line, tline, i, rowNum)
+        if j!=len(line)-1 and tline[j+1] != 'COMMENT':
+            raise RuntimeError("Unexpected %r in line %d" % (line[j+1],rowNum))
+        else:
+            return k
 
 def printLine(line, tline):
     #assume muna na YARN lang ung priniprint
