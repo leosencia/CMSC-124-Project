@@ -17,7 +17,6 @@ class LexicalAnalyzer:
             ("VAR_DEC", r"I HAS A"),
             ("INPUT", r"GIMMEH"),
             ("ITZ", r"ITZ"),
-            ("IT", r"IT"),
             ("CONCAT", r"SMOOSH"),
             ("PRINT", r"VISIBLE"),
             ("TYPECAST", r"MAEK"),
