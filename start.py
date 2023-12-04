@@ -21,9 +21,9 @@ if __name__ == '__main__':
         row += lin
         column += col
     
-    print('\nRecognize Tokens: ', token)
-    print('\nRecognize Lexems: ', lexeme)
-    print('\nRecognize row: ', row)
-    print('\nRecognize col: ', column)
+    # print('\nRecognize Tokens: ', token)
+    # print('\nRecognize Lexems: ', lexeme)
+    # print('\nRecognize row: ', row)
+    # print('\nRecognize col: ', column)
     Syntax.program(token, lexeme, row)
 

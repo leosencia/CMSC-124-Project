@@ -421,8 +421,8 @@ def mathOp(line, tline, i, rowNum):
                 op.append(float(line[i]))
                 i += 1
             elif tline[i] == "VARIABLE":
-                value, type = searchVarValue(line[i])
-                op.append([type, value])
+                value, _ = searchVarValue(line[i])
+                op.append(value)
                 i += 1
             elif tline[i] == "YARN":
                 value = typeCasting(line[i], tline[i], "NUMBAR", rowNum)
