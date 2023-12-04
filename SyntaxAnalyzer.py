@@ -25,8 +25,8 @@ class SyntaxAnalyzer:
                     i = isVarDec(tokens, lexeme, row, i)
 
                 i = statement(tokens, lexeme, row, i)
-
                 if i >= len(tokens):
+                    print("Aaaaa")
                     break
             if i == len(tokens):
                 raise RuntimeError("End of program not found")
@@ -61,7 +61,6 @@ def isVarDec(tokens, lexeme, row, i):
         if i >= maxlen:
             raise RuntimeError("Encountered end of file")
     return i
-
 
 def storeVariable(tline, line, rowNum):
     global vars
@@ -132,6 +131,7 @@ def statement(tokens, lexeme, row, i):
         tline.append(tokens[i])
         line.append(lexeme[i])
         i += 1
+        if i == len(lexeme): break
 
     if tline[0] == "PRINT":
         printLine(line, tline, i)
