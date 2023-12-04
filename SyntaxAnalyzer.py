@@ -113,11 +113,12 @@ def statement(tokens, lexeme, row, i):
         i += 1
 
     if tline[0] == "PRINT":
-        printLine(line, tline)
+        printLine(line, tline, i)
     elif tline[0] == "VAR_DEC":
         raise RuntimeError("Unexpected variable declaration at line %d" % (rowNum))
     elif tline[0] == "BOOL_OPER":
-        storeVariables("IT", "TROOF", boolOpRegion(line, tline, 0, rowNum))
+        value = boolOpRegion(line, tline, 0, rowNum)
+        storeVariables("IT", "TROOF", value)
         # print(boolOpRegion(line, tline, 0, rowNum))
     elif tline[0] == "COMPARISON":
         storeVariables("IT", "TROOF", comparison(line, tline, 0, rowNum))
@@ -484,7 +485,6 @@ def boolOp(line, tline, i, rowNum):
 
 
 def boolOpRegion(line, tline, i, rowNum):
-    #print(line)
     if line[i] == 'ALL OF' or line[i] == 'ANY OF':
         if line[i] == 'ALL OF':
             initCond = 'WIN'
@@ -507,6 +507,7 @@ def boolOpRegion(line, tline, i, rowNum):
                 raise RuntimeError("Expected AN at line %d, %d but encountered %r" % (rowNum, i, line[i]))
         if i!=len(line) and tline[i] != 'COMMENT':
             raise RuntimeError("Unexpected %r in line %d" % (line[i+1],rowNum))
+        # print("i: "+str(i))
         return initCond
     else:
         j, k = boolOp(line, tline, i, rowNum)
@@ -515,7 +516,7 @@ def boolOpRegion(line, tline, i, rowNum):
         else:
             return k
 
-def printLine(line, tline):
+def printLine(line, tline, rowNum):
     # assume muna na YARN lang ung priniprint
     string = ""
     for i in range(0, len(line)):
@@ -528,6 +529,7 @@ def printLine(line, tline):
                     value = typeCasting(value, type, "YARN", i)
                 else:
                     value = value.strip()
+                print(value)
                 string = string + value
             elif tline[i] == "NUMBR" or tline[i] == "NUMBAR":
                 value = typeCasting(line[i], tline[i], "YARN", i)
@@ -535,8 +537,21 @@ def printLine(line, tline):
             elif tline[i] == "TROOF":
                 value = line[i]
                 string = string + value
+            elif tline[i] == "BOOL_OPER":
+                value = boolOpRegion(line, tline, i, rowNum)
+                string = string + value
+                break
+            elif tline[i] == "COMPARISON":
+                value = comparison(line, tline, i, rowNum)
+                string = string + value
+                break
+            elif tline[i] == "MATH":
+                value = str(mathOp(line, tline, i, rowNum))
+                string = string + value
+                break
             else:
                 raise RuntimeError("Type %r cannot be printed" % (tline[i]))
+
     print(string)
 
 def searchVarValue(name):
@@ -638,4 +653,5 @@ def storeVariables(varName, type, newVal):
         if variable.name == varName:
             variable.dataType = type
             variable.value = newVal
+    return RuntimeError("Variable %r does not exist")
     
