@@ -94,12 +94,23 @@ def storeVariable(tline, line, rowNum):
     ):
         type = tline[i]
         value = line[i]
-        vars.append(Variable(varName, type, value))
-        return
+    elif tline[i] == "BOOL_OPER":
+        value = boolOpRegion(line, tline, i, rowNum)
+        type = "TROOF"
+    elif tline[i] == "COMPARISON":
+        value = comparison(line, tline, i, rowNum)
+        type = "TROOF"
+    elif tline[i] == "MATH":
+        value = mathOp(line, tline, i, rowNum)
+        if isinstance(value, int):
+            type = "NUMBR"
+        else:
+            type = "NUMBAR"
     else:
         raise RuntimeError(
             "Variable declaration can only be to a YARN, TROOF, NOOB etch"
         )
+    vars.append(Variable(varName, type, value))
 
 def statement(tokens, lexeme, row, i):
     global vars
@@ -131,7 +142,12 @@ def statement(tokens, lexeme, row, i):
             storeVariables("IT", "NUMBAR", value)
     elif tline[0] == "INPUT":
         getInput(line, tline, 0, rowNum)
+    elif tline[0] == "VARIABLE":
+        print("Recasting or Assignment")
     return i
+
+# def variableLine(line, tline, i, rowNum):
+#     if tline[i] == "R"
 
 def getInput(line, tline, i, rowNum):
     i += 1
@@ -387,7 +403,6 @@ def parse(tokens):
         else:
             return token
 
-
 def mathOp(line, tline, i, rowNum):
     op = []
 
@@ -436,7 +451,6 @@ def mathOp(line, tline, i, rowNum):
 
     return parse(deque(op))
 
-
 def boolOp(line, tline, i, rowNum):
     if tline[i] == "BOOL_OPER":
         opAddress = i
@@ -482,7 +496,6 @@ def boolOp(line, tline, i, rowNum):
         return i, line[i]
     else:
         raise RuntimeError("Unexpected %r at line %d, %d" % (line[i], rowNum))
-
 
 def boolOpRegion(line, tline, i, rowNum):
     if line[i] == 'ALL OF' or line[i] == 'ANY OF':
