@@ -1,6 +1,6 @@
 class Buffer:
     def load_buffer(self):
-        arq = open('sample_lolcodes/hello_world.lol', 'r')
+        arq = open("sample_lolcodes/hello_world.lol", "r")
         text = arq.readline()
 
         buffer = []
@@ -12,9 +12,9 @@ class Buffer:
             text = arq.readline()
             cont += 1
 
-            if cont == 10 or text == '':
+            if cont == 10 or text == "":
                 # Return a full buffer
-                buf = ''.join(buffer)
+                buf = "".join(buffer)
                 cont = 1
                 yield buf
 
