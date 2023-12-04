@@ -84,17 +84,25 @@ def storeVariable(tline, line, rowNum):
 
     if i >= maxlength:
         raise RuntimeError("Variable must have a value!")
-
+    
+    storing(varName, tline, line, i, rowNum)
+   
+def storing(varName, tline, line, i, rowNum):
     if (
         tline[i] == "NOOB"
         or tline[i] == "YARN"
         or tline[i] == "TROOF"
-        or tline[i] == "NUMBAR"
-        or tline[i] == "NUMBR"
-        or tline[i] == "VARIABLE"
     ):
         type = tline[i]
         value = line[i]
+    elif tline[i] == "NUMBAR":
+        type = tline[i]
+        value = float(line[i])
+    elif tline[i] == "NUMBR":
+        type = tline[i]
+        value = int(line[i])
+    elif tline[i] == "VARIABLE":
+        value, type = searchVarValue(line[i])
     elif tline[i] == "BOOL_OPER":
         value = boolOpRegion(line, tline, i, rowNum)
         type = "TROOF"
@@ -111,8 +119,8 @@ def storeVariable(tline, line, rowNum):
         raise RuntimeError(
             "Variable declaration can only be to a YARN, TROOF, NOOB etch"
         )
+    
     vars.append(Variable(varName, type, value)) 
-
 
 def statement(tokens, lexeme, row, i):
     global vars
@@ -145,11 +153,53 @@ def statement(tokens, lexeme, row, i):
     elif tline[0] == "INPUT":
         getInput(line, tline, 0, rowNum)
     elif tline[0] == "VARIABLE":
-        print("Recasting or Assignment")
+        # print("Recasting or Assignment")
+        variableLine(line, tline, 1, rowNum)
+    elif tline[0] == "TYPECAST":
+        # print("Expl Typecasting")
+        explicitTypecasting(line, tline, 1, rowNum, 0)
     return i
 
-# def variableLine(line, tline, i, rowNum):
-#     if tline[i] == "R"
+def variableLine(line, tline, i, rowNum):
+    #i = 1 because 0 = VAR
+    if tline[i] == "R":
+        i+= 1
+        if tline[i] == "TYPECAST": #R MAEK
+            varName = line[0].strip()
+            i+=1
+            
+            if tline[i] != "VARIABLE": raise RuntimeError("Unexpected %r in line %d. Expected a variable" % (tline[i], rowNum))
+
+            var2 = line[i]
+            i+=1 #type2
+            if tline[i] != "DATA_TYPE": raise RuntimeError("Unexpected %r in line %d. Expected a data type" % (tline[i], rowNum))
+
+            value, type = searchVarValue(var2)
+            storeVariables(varName, line[i], typeCasting(value, type, line[i], rowNum))
+            return
+        storing(line[0].strip(), tline, line, i, rowNum)
+    elif tline[i] == "RECASTMAGIC": #IS NOW A
+        varName = line[0].strip()
+        i+=1
+        if tline[i] != "DATA_TYPE": raise RuntimeError("Unexpected %r in line %d. Expected a data type" % (tline[i], rowNum))
+
+        value, type = searchVarValue(varName)
+        type2 = line[i]
+        storeVariables(varName, type2, typeCasting(value, type, type2, rowNum))
+        # printVariables()
+    else:
+        raise RuntimeError("Unexpected %r in line %d" % (tline[i], rowNum))
+
+def explicitTypecasting(line, tline, i, rowNum):
+    #i == 1
+    if tline[i] != "VARIABLE":
+        raise RuntimeError("Unexpected %r in line %d. Expected variable" % (tline[i], i))
+    varName = line[i]
+    value, type = searchVarValue(line[i])
+    i += 1
+    if tline[i] == "A": i += 1
+    if tline[i] != "DATA_TYPE": raise RuntimeError("Unexpected %r in line %d. Expected data type")
+    storeVariable("IT", line[i], typeCasting(value, type, line[i], rowNum))
 
 def getInput(line, tline, i, rowNum):
     i += 1
@@ -572,7 +622,6 @@ def printLine(line, tline, rowNum):
                     value = typeCasting(value, type, "YARN", i)
                 else:
                     value = value.strip()
-                print(value)
                 string = string + value
             elif tline[i] == "NUMBR" or tline[i] == "NUMBAR":
                 value = typeCasting(line[i], tline[i], "YARN", i)
@@ -700,4 +749,5 @@ def storeVariables(varName, type, newVal):
         if variable.name == varName:
             variable.dataType = type
             variable.value = newVal
+            return
     return RuntimeError("Variable %r does not exist")
