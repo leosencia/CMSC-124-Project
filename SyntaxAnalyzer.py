@@ -62,6 +62,7 @@ def isVarDec(tokens, lexeme, row, i):
             raise RuntimeError("Encountered end of file")
     return i
 
+
 def storeVariable(tline, line, rowNum):
     global vars
     i = 1
@@ -110,7 +111,8 @@ def storeVariable(tline, line, rowNum):
         raise RuntimeError(
             "Variable declaration can only be to a YARN, TROOF, NOOB etch"
         )
-    vars.append(Variable(varName, type, value))
+    vars.append(Variable(varName, type, value)) 
+
 
 def statement(tokens, lexeme, row, i):
     global vars
@@ -151,12 +153,15 @@ def statement(tokens, lexeme, row, i):
 
 def getInput(line, tline, i, rowNum):
     i += 1
-    if tline[i] == 'VARIABLE':
+    if tline[i] == "VARIABLE":
         varName = line[i]
         inputSTR = input("")
         storeVariables(varName, "YARN", inputSTR)
     else:
-        raise RuntimeError("Error in line %d, expected VARIABLE instead of %r" % (rowNum, line[i]))
+        raise RuntimeError(
+            "Error in line %d, expected VARIABLE instead of %r" % (rowNum, line[i])
+        )
+
 
 def comparison(line, tline, i, rowNum):
     compQ = []
@@ -380,6 +385,7 @@ def comparison(line, tline, i, rowNum):
             else:
                 return "FAIL"
 
+
 # function for parsing prefix notation math operations
 def parse(tokens):
     if not tokens:
@@ -405,29 +411,38 @@ def parse(tokens):
 
 def mathOp(line, tline, i, rowNum):
     op = []
+    num_of_operations = 0
+    num_of_AN = 0
 
     while i < len(line):
         if line[i] == "SUM OF":
             op.append("+")
             i += 1
+            num_of_operations += 1
         elif line[i] == "DIFF OF":
             op.append("-")
             i += 1
+            num_of_operations += 1
         elif line[i] == "PRODUKT OF":
             op.append("*")
             i += 1
+            num_of_operations += 1
         elif line[i] == "QUOSHUNT OF":
             op.append("/")
             i += 1
+            num_of_operations += 1
         elif line[i] == "MOD OF":
             op.append("%")
             i += 1
+            num_of_operations += 1
         elif line[i] == "BIGGR OF":
             op.append("max")
             i += 1
+            num_of_operations += 1
         elif line[i] == "SMALLR OF":
             op.append("min")
             i += 1
+            num_of_operations += 1
         else:
             if tline[i] == "NUMBR":
                 op.append(int(line[i]))
@@ -445,11 +460,20 @@ def mathOp(line, tline, i, rowNum):
                 i += 1
             elif tline[i] == "AN":
                 i += 1
+                num_of_AN += 1
             else:
                 raise RuntimeError("Unexpected %r at line %d" % (line[i], rowNum))
             i += 1
 
-    return parse(deque(op))
+    expected_operands = num_of_operations + 1
+    actual_operands = len(op) - (num_of_AN + num_of_operations)
+    if expected_operands != actual_operands:
+        raise RuntimeError(
+            "Expected %d operands, but found %d at line %d"
+            % (expected_operands, actual_operands, rowNum)
+        )
+    else:
+        return parse(deque(op))
 
 def boolOp(line, tline, i, rowNum):
     if tline[i] == "BOOL_OPER":
@@ -498,36 +522,42 @@ def boolOp(line, tline, i, rowNum):
         raise RuntimeError("Unexpected %r at line %d, %d" % (line[i], rowNum))
 
 def boolOpRegion(line, tline, i, rowNum):
-    if line[i] == 'ALL OF' or line[i] == 'ANY OF':
-        if line[i] == 'ALL OF':
-            initCond = 'WIN'
-            terminateCond = 'WIN'
-        elif line[i] == 'ANY OF':
-            terminateCond = 'FAIL'
-            initCond = 'FAIL'
-        i+=1
+    if line[i] == "ALL OF" or line[i] == "ANY OF":
+        if line[i] == "ALL OF":
+            initCond = "WIN"
+            terminateCond = "WIN"
+        elif line[i] == "ANY OF":
+            terminateCond = "FAIL"
+            initCond = "FAIL"
+        i += 1
         while i < len(line):
-            if initCond==terminateCond:
+            if initCond == terminateCond:
                 i, initCond = boolOp(line, tline, i, rowNum)
-                i+=1
-            if line[i] == 'AN':
-                i+=1
-            elif tline[i] == 'BOOL_OPER' or tline[i] == 'TROOF' or tline[i] == 'VARIABLE':
-                i+=1
-            elif line[i] == 'MKAY':
+                i += 1
+            if line[i] == "AN":
+                i += 1
+            elif (
+                tline[i] == "BOOL_OPER" or tline[i] == "TROOF" or tline[i] == "VARIABLE"
+            ):
+                i += 1
+            elif line[i] == "MKAY":
                 break
             else:
-                raise RuntimeError("Expected AN at line %d, %d but encountered %r" % (rowNum, i, line[i]))
-        if i!=len(line) and tline[i] != 'COMMENT':
-            raise RuntimeError("Unexpected %r in line %d" % (line[i+1],rowNum))
+                raise RuntimeError(
+                    "Expected AN at line %d, %d but encountered %r"
+                    % (rowNum, i, line[i])
+                )
+        if i != len(line) and tline[i] != "COMMENT":
+            raise RuntimeError("Unexpected %r in line %d" % (line[i + 1], rowNum))
         # print("i: "+str(i))
         return initCond
     else:
         j, k = boolOp(line, tline, i, rowNum)
-        if j!=len(line)-1 and tline[j+1] != 'COMMENT':
-            raise RuntimeError("Unexpected %r in line %d" % (line[j+1],rowNum))
+        if j != len(line) - 1 and tline[j + 1] != "COMMENT":
+            raise RuntimeError("Unexpected %r in line %d" % (line[j + 1], rowNum))
         else:
             return k
+
 
 def printLine(line, tline, rowNum):
     # assume muna na YARN lang ung priniprint
@@ -535,7 +565,7 @@ def printLine(line, tline, rowNum):
     for i in range(0, len(line)):
         if tline[i] != "PRINT" and tline[i] != "COMMENT":
             if tline[i] == "YARN":
-                string = string + line[i].replace("\"", "")
+                string = string + line[i].replace('"', "")
             elif tline[i] == "VARIABLE":
                 value, type = searchVarValue(line[i])
                 if type != "YARN":
@@ -567,14 +597,16 @@ def printLine(line, tline, rowNum):
 
     print(string)
 
+
 def searchVarValue(name):
     global vars
     name = name.strip()
     for variable in vars:
         if variable.name == name:
             return variable.value, variable.dataType
-    
+
     raise RuntimeError("Variable %r does not exist" % (name))
+
 
 def typeCasting(value, type1, type2, rowNum):
     if type1 == "NOOB":
@@ -652,6 +684,7 @@ def typeCasting(value, type1, type2, rowNum):
                     % (rowNum, type2)
                 )
 
+
 def printVariables():
     global vars
     for variable in vars:
@@ -660,6 +693,7 @@ def printVariables():
         print(variable.value)
         print("")
 
+
 def storeVariables(varName, type, newVal):
     global vars
     for variable in vars:
@@ -667,4 +701,3 @@ def storeVariables(varName, type, newVal):
             variable.dataType = type
             variable.value = newVal
     return RuntimeError("Variable %r does not exist")
-    
