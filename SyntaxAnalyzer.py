@@ -90,10 +90,13 @@ def loop(tokens, lexeme, row, i):
             while True:
                 i = statement(tokens, lexeme, row, i)
                 
+                if i >= len(tokens):
+                    raise RuntimeError("End of file encountered! Expected loop delimiter")
                 if tokens[i] == "OUTLOOP" and tokens[i+1] == "VARIABLE":
                     if row[i+1] != row[i]: raise RuntimeError("Unexpected newline in line %d", row[i])
                     if lexeme[i+1] != loop_label: raise RuntimeError("Expected %r in line %d. Encountered %r instead." % (loop_label, row[i], lexeme[i+1]))
                     break
+                elif tokens[i] == "KTHXBYE": raise RuntimeError("End of program encountered! Expected loop delimiter")
             value += add
             # print("val: " + str(value) + " i: "+ str(i) + " rowNum: "+ str(rowNum) + " row[i]: "+ str(row[i]))
             storeVariables(varName.strip(), type, value)
