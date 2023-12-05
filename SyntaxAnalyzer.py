@@ -102,7 +102,7 @@ def storing(varName, tline, line, i, rowNum):
         value = int(line[i])
     elif tline[i] == "VARIABLE":
         value, type = searchVarValue(line[i])
-    elif tline[i] == "BOOL_OPER" or tline[i] == "COMPARISON" or tline[i] == "MATH":
+    elif tline[i] == "BOOL_OPER" or tline[i] == "COMPARISON" or tline[i] == "MATH" or tline[i] == "CONCAT":
         value, type = expression(line, tline, i, rowNum)
     else:
         raise RuntimeError(
@@ -127,8 +127,7 @@ def statement(tokens, lexeme, row, i):
         printLine(line, tline, i)
     elif tline[0] == "VAR_DEC":
         raise RuntimeError("Unexpected variable declaration at line %d" % (rowNum))
-    elif tline[0] == "BOOL_OPER" or tline[0] == "COMPARISON" or tline[0] == "MATH":
-
+    elif tline[0] == "BOOL_OPER" or tline[0] == "COMPARISON" or tline[0] == "MATH" or tline[0] == "CONCAT":
         value, type = expression(line, tline, 0, rowNum)
         storeVariables("IT", type, value)
     elif tline[0] == "INPUT":
@@ -154,9 +153,42 @@ def expression(line, tline, i, rowNum):
             type = "NUMBR"
         else:
             type = "NUMBAR"
+    elif tline[i] == "CONCAT":
+        value = smoosh(line, tline, i, rowNum)
+        type = "YARN"
     else:
         raise RuntimeError("Encountered error in line %d, Expression %r does not exist!" % (rowNum, tline[i]))
     return value, type
+
+def smoosh(line, tline, i, rowNum):
+    string = ""
+    i += 1
+    while i < len(line):
+        if tline[i] == "YARN":
+            value = line[i].replace('"', "")
+        elif tline[i] == "NUMBR" or tline[i] == "NUMBAR" or tline[i] == "TROOF":
+            value = typeCasting(line[i], tline[i], "YARN", i)
+        elif tline[i] == "VARIABLE":
+            value, type = searchVarValue(line[i])
+            if type != "YARN":
+                value = typeCasting(value, type, "YARN", i)
+            else:
+                value = value.strip()
+        elif tline[i] == "BOOL_OPER" or tline[i] == "COMPARISON" or tline[i] == "MATH":
+            value, _ = expression(line, tline, i, rowNum)
+            value = str(value)
+        else:
+            raise RuntimeError("Unexpected %r in line %d. Expected a YARN, TROOF, VARIABLE, or EXPRESSION." % (tline[i], rowNum))
+        string = string + value
+        i += 1
+        if i >= len(line):
+            return string
+        elif tline[i] == "COMMENT":
+            return string
+        elif tline[i] != 'AN':
+            raise RuntimeError("Unexpected %r in line %d. Expected an AN or end of line" % (tline[i], rowNum))
+        i += 1
+    return string
 
 def variableLine(line, tline, i, rowNum):
     #i = 1 because 0 = VAR
@@ -624,7 +656,7 @@ def printLine(line, tline, rowNum):
             elif tline[i] == "TROOF":
                 value = line[i]
                 string = string + value
-            elif tline[i] == "BOOL_OPER" or tline[i] == "COMPARISON" or tline[i] == "MATH":
+            elif tline[i] == "BOOL_OPER" or tline[i] == "COMPARISON" or tline[i] == "MATH" or tline[i] == "CONCAT":
                 value, _ = expression(line, tline, i, rowNum)
                 string = string + str(value)
                 break
@@ -725,7 +757,6 @@ def printVariables():
         print(variable.dataType)
         print(variable.value)
         print("")
-
 
 def storeVariables(varName, type, newVal):
     global vars
