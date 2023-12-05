@@ -13,18 +13,23 @@ class SyntaxAnalyzer:
             i += 1
 
         if tokens[i] == "START":  # encountered start of program
+        
+            if tokens[i] == "WAZZUP":
+                i += 1
+                i = isVarDec(tokens, lexeme, row, i)
+
             print("==== PROGRAM START! === \n")
             i += 1
             while tokens[i] != "END" and i < len(tokens):
                 if tokens[i] == "COMMENT":
                     i += 1
                     continue
-
-                if tokens[i] == "WAZZUP":
-                    i += 1
-                    i = isVarDec(tokens, lexeme, row, i)
-
-                i = statement(tokens, lexeme, row, i)
+                
+                if tokens[i] == "IFELSE":
+                    #enter ifelse block
+                    i = ifElse(tokens, lexeme, row, i)
+                else:
+                    i = statement(tokens, lexeme, row, i)
                 if i >= len(tokens):
                     print("Aaaaa")
                     break
@@ -34,6 +39,44 @@ class SyntaxAnalyzer:
         else:
             raise RuntimeError("Start of program not found")
 
+def ifElse(tokens, lexeme, row, i):
+    #get conditional value in IT
+    cond, type = searchVarValue("IT")
+    if type != "TROOF":
+        cond = typeCasting(cond, type, "TROOF", row[i-1])
+    
+    cond = True if cond == "WIN" else False
+    maxlen = len(tokens)
+    i += 1
+    print(cond)
+    #run this while you haven't encountered OIC
+    if cond == True: #YA RLY
+        if tokens[i] == "IFTRUE":
+            while tokens[i] != "ENDIFELSE" and tokens[i] != "IFFALSE":
+                i = statement(tokens, lexeme, row, i)
+                
+                if i >= maxlen:
+                    raise RuntimeError("Expected OIC encountered end of file instead")
+            if tokens[i] == "IFFALSE":
+                while tokens[i] != "ENDIFELSE":
+                    i+=1
+                    if i >= maxlen:
+                        raise RuntimeError("Expected OIC encountered end of file instead")
+                return i    
+    elif cond == False:
+        if tokens[i] == "IFTRUE":
+            while tokens[i] != "IFFALSE":
+                i += 1
+                if i >= maxlen:
+                    raise RuntimeError("Expected NO WAI encountered end of file instead")
+            #if NO WAI is encountered
+            while tokens[i] != "ENDIFELSE":
+                i = statement(tokens, lexeme, row, i)
+                if i >= maxlen:
+                    raise RuntimeError("Expected OIC encountered end of file instead")
+    else:
+        raise RuntimeError("Unexpected %r in line %d" % (tokens[i], row[i]))
+    return i
 
 def isVarDec(tokens, lexeme, row, i):
     maxlen = len(tokens)
