@@ -1,6 +1,6 @@
 class Buffer:
     def load_buffer(self):
-        arq = open("sample_lolcodes/typecasting.lol", "r")
+        arq = open("sample_lolcodes/conditionals.lol", "r")
         text = arq.readline()
 
         buffer = []

@@ -1,13 +1,22 @@
 HAI
 
-  BOTH SAEM 1 AN 2
+  BOTH SAEM 1 AN 1
   O RLY?
     YA RLY
-      BTW true branch
-    MEBBE BOTH SAEM 3 AN 4
+      VISIBLE "AM IN TRUE BRANCH"
+      SUM OF 1 AN 2
+      VISIBLE IT
+      MoRan R "RANRAN"
+      VISIBLE MoRan
+    BTW MEBBE BOTH SAEM 3 AN 4
       BTW else-if goes here
     NO WAI
       BTW false branch
+      VISIBLE "AM IN FALSE BRANCH"
+      BOTH OF WIN AN FAIL
+      VISIBLE IT
+      SMOOSH "HAHAH I WIN LMAOLMAOMLAO" AN IT
+      VISIBLE IT
   OIC
 
 KTHXBYE
