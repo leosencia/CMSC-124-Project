@@ -17,6 +17,12 @@ class LexicalAnalyzer:
             ("VAR_DEC", r"I HAS A"),
             ("INPUT", r"GIMMEH"),
             ("ITZ", r"ITZ"),
+            ("INLOOP", r"IM IN YR"),
+            ("INCR", r"UPPIN YR"),
+            ("DECR", r"NERFIN YR"),
+            ("WILE", r"WILE"),
+            ("TIL", r"TIL"),
+            ("OUTLOOP", r"IM OUTTA YR"),
             ("IFELSE", r"O RLY\?"),
             ("IFTRUE", r"YA RLY"),
             ("IFFALSE", r"NO WAI"),
@@ -75,10 +81,10 @@ class LexicalAnalyzer:
                 lexeme.append(token_lexeme)
                 row.append(self.lin_num)
                 # To print information about a Token
-                # print(
-                #     "Token = {0}, Lexeme = '{1}', Row = {2}, Column = {3}".format(
-                #         token_type, token_lexeme, self.lin_num, col
-                #     )
-                # )
+                print(
+                    "Token = {0}, Lexeme = '{1}', Row = {2}, Column = {3}".format(
+                        token_type, token_lexeme, self.lin_num, col
+                    )
+                )
 
         return token, lexeme, row, column
