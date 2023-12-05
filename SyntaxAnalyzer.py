@@ -102,18 +102,8 @@ def storing(varName, tline, line, i, rowNum):
         value = int(line[i])
     elif tline[i] == "VARIABLE":
         value, type = searchVarValue(line[i])
-    elif tline[i] == "BOOL_OPER":
-        value = boolOpRegion(line, tline, i, rowNum)
-        type = "TROOF"
-    elif tline[i] == "COMPARISON":
-        value = comparison(line, tline, i, rowNum)
-        type = "TROOF"
-    elif tline[i] == "MATH":
-        value = mathOp(line, tline, i, rowNum)
-        if isinstance(value, int):
-            type = "NUMBR"
-        else:
-            type = "NUMBAR"
+    elif tline[i] == "BOOL_OPER" or tline[i] == "COMPARISON" or tline[i] == "MATH":
+        value, type = expression(line, tline, i, rowNum)
     else:
         raise RuntimeError(
             "Variable declaration can only be to a YARN, TROOF, NOOB etch"
@@ -137,19 +127,10 @@ def statement(tokens, lexeme, row, i):
         printLine(line, tline, i)
     elif tline[0] == "VAR_DEC":
         raise RuntimeError("Unexpected variable declaration at line %d" % (rowNum))
-    elif tline[0] == "BOOL_OPER":
-        value = boolOpRegion(line, tline, 0, rowNum)
-        storeVariables("IT", "TROOF", value)
-        # print(boolOpRegion(line, tline, 0, rowNum))
-    elif tline[0] == "COMPARISON":
-        storeVariables("IT", "TROOF", comparison(line, tline, 0, rowNum))
-        # print(comparison(line, tline, 0, rowNum))
-    elif tline[0] == "MATH":
-        value = mathOp(line, tline, 0, rowNum)
-        if isinstance(value, int):
-            storeVariables("IT", "NUMBR", value)
-        else:
-            storeVariables("IT", "NUMBAR", value)
+    elif tline[0] == "BOOL_OPER" or tline[0] == "COMPARISON" or tline[0] == "MATH":
+
+        value, type = expression(line, tline, 0, rowNum)
+        storeVariables("IT", type, value)
     elif tline[0] == "INPUT":
         getInput(line, tline, 0, rowNum)
     elif tline[0] == "VARIABLE":
@@ -159,6 +140,23 @@ def statement(tokens, lexeme, row, i):
         # print("Expl Typecasting")
         explicitTypecasting(line, tline, 1, rowNum, 0)
     return i
+
+def expression(line, tline, i, rowNum):
+    if tline[i] == "BOOL_OPER":
+        value = boolOpRegion(line, tline, i, rowNum)
+        type = "TROOF"
+    elif tline[i] == "COMPARISON":
+        value = comparison(line, tline, i, rowNum)
+        type = "TROOF"
+    elif tline[i] == "MATH":
+        value = mathOp(line, tline, i, rowNum)
+        if isinstance(value, int):
+            type = "NUMBR"
+        else:
+            type = "NUMBAR"
+    else:
+        raise RuntimeError("Encountered error in line %d, Expression %r does not exist!" % (rowNum, tline[i]))
+    return value, type
 
 def variableLine(line, tline, i, rowNum):
     #i = 1 because 0 = VAR
@@ -211,7 +209,6 @@ def getInput(line, tline, i, rowNum):
         raise RuntimeError(
             "Error in line %d, expected VARIABLE instead of %r" % (rowNum, line[i])
         )
-
 
 def comparison(line, tline, i, rowNum):
     compQ = []
@@ -435,7 +432,6 @@ def comparison(line, tline, i, rowNum):
             else:
                 return "FAIL"
 
-
 # function for parsing prefix notation math operations
 def parse(tokens):
     if not tokens:
@@ -608,7 +604,6 @@ def boolOpRegion(line, tline, i, rowNum):
         else:
             return k
 
-
 def printLine(line, tline, rowNum):
     # assume muna na YARN lang ung priniprint
     string = ""
@@ -629,23 +624,14 @@ def printLine(line, tline, rowNum):
             elif tline[i] == "TROOF":
                 value = line[i]
                 string = string + value
-            elif tline[i] == "BOOL_OPER":
-                value = boolOpRegion(line, tline, i, rowNum)
-                string = string + value
-                break
-            elif tline[i] == "COMPARISON":
-                value = comparison(line, tline, i, rowNum)
-                string = string + value
-                break
-            elif tline[i] == "MATH":
-                value = str(mathOp(line, tline, i, rowNum))
-                string = string + value
+            elif tline[i] == "BOOL_OPER" or tline[i] == "COMPARISON" or tline[i] == "MATH":
+                value, _ = expression(line, tline, i, rowNum)
+                string = string + str(value)
                 break
             else:
                 raise RuntimeError("Type %r cannot be printed" % (tline[i]))
 
     print(string)
-
 
 def searchVarValue(name):
     global vars
@@ -655,7 +641,6 @@ def searchVarValue(name):
             return variable.value, variable.dataType
 
     raise RuntimeError("Variable %r does not exist" % (name))
-
 
 def typeCasting(value, type1, type2, rowNum):
     if type1 == "NOOB":
@@ -732,7 +717,6 @@ def typeCasting(value, type1, type2, rowNum):
                     "Encountered error in line %d, cannot typecast YARN to %r"
                     % (rowNum, type2)
                 )
-
 
 def printVariables():
     global vars
