@@ -1,3 +1,8 @@
+# Group Name - ERL
+Members:
+- Elysse Samantha T. Beltran (Lead)
+- Aldrine Drebb Cristobal
+- Lawrence Quinones
 
 # TO-DO
   **[Google sheets task tracker](https://docs.google.com/spreadsheets/d/1GRKTS3OtOthObzVezH7hfzfZaVjWrcyvOWxXkNz77BE/edit?usp=sharing)**
