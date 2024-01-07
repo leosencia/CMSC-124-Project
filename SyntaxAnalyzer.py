@@ -3,13 +3,13 @@ from Variable import Variable
 from collections import deque
 
 vars = [Variable("IT", "NOOB", "")]
-returnVals = False
+returnVals = [False]
 
 
 class SyntaxAnalyzer:
     def program(self, tokens, lexeme, row):
         global returnVals
-        returnVals = False
+        returnVals = [False]
         i = 0
 
         while tokens[i] == "COMMENT":
@@ -48,6 +48,7 @@ class SyntaxAnalyzer:
             returnVals.append("ERROR: Start of program not found")
             return returnVals
             raise RuntimeError("Start of program not found")
+        return returnVals
 
 
 def loop(tokens, lexeme, row, i):
@@ -1350,6 +1351,7 @@ def printLine(line, tline, rowNum):
                 raise RuntimeError("Type %r cannot be printed" % (tline[i]))
 
     print(string)
+    returnVals.append(string)
 
 
 def searchVarValue(name):

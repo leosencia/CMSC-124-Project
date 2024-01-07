@@ -19,6 +19,7 @@ if __name__ == "__main__":
     column = []
     txt_ctrl_val = ""
     file_attached = False
+    returnVal = []
 
     # these variables are instantiated early because of scope issues
     app = wx.App()
@@ -28,7 +29,7 @@ if __name__ == "__main__":
     frame.SetIcon(icon)
 
     panel = wx.Panel(frame)
-    text_editor = wx.TextCtrl(panel, style=wx.TE_MULTILINE | wx.TE_NO_VSCROLL)
+    text_editor = wx.TextCtrl(panel, style=wx.TE_MULTILINE)
 
     main_horizontal_box = wx.BoxSizer(wx.HORIZONTAL)
     left_vertical_box = wx.BoxSizer(wx.VERTICAL)
@@ -67,7 +68,8 @@ if __name__ == "__main__":
     line = wx.StaticLine(terminal_panel, size=(400, -1), style=wx.LI_HORIZONTAL)
 
     def on_attach_file_button(event):
-        global path, txt_ctrl_val, text_editor, file_attached
+        global path, txt_ctrl_val, text_editor, file_attached, returnVal
+        returnVal = []
         path = None
         with wx.FileDialog(
             frame,
@@ -81,7 +83,62 @@ if __name__ == "__main__":
 
             print(f"Selected file: {path}")
             returnVal = start(path)
+            print("THis is the display text:")
+            print(returnVal[0])
             text_editor.SetValue("".join(returnVal[0]))
+
+            # # TODO: transfer the following code to the execute button
+            # print("HERE")
+            # print(returnVal)
+            # if returnVal[1][0] == False:
+            #     print("HEREEE")
+            #     print(returnVal[1])
+            #     terminal_content = returnVal[1][1:]
+            #     joined_terminal_content = "\n".join(terminal_content)
+            #     start_str = '> lolcode -u "' + path + '"\n'
+            #     start_text = wx.StaticText(terminal_scrollpane, label=start_str)
+            #     start_text.SetFont(terminal_font)
+            #     start_text.SetForegroundColour("#98ddeb")
+            #     joined_text = wx.StaticText(
+            #         terminal_scrollpane, label=joined_terminal_content
+            #     )
+            #     joined_text.SetFont(terminal_font)
+            #     joined_text.SetForegroundColour("#FFFFFF")
+            #     terminal_context_box.Add(start_text, 0, wx.EXPAND | wx.ALL, 10)
+            #     terminal_context_box.Add(joined_text, 0, wx.EXPAND | wx.ALL, 10)
+            # else:
+            #     print("KKKK")
+            #     print(returnVal[1])
+            #     terminal_content = []
+            #     for i in range(len(returnVal[1])):
+            #         if i != 0:
+            #             terminal_content.append(returnVal[1][i])
+            #     joined_terminal_content = "\n".join(terminal_content)
+            #     start_str = '> lolcode -u "' + path + '"\n'
+            #     start_text = wx.StaticText(terminal_scrollpane, label=start_str)
+            #     start_text.SetFont(terminal_font)
+            #     start_text.SetForegroundColour("#98ddeb")
+            #     terminal_text = wx.StaticText(
+            #         terminal_scrollpane, label=joined_terminal_content
+            #     )
+            #     terminal_text.SetFont(terminal_font)
+            #     terminal_text.SetForegroundColour("#FFFFFF")
+            #     terminal_context_box.Add(terminal_text, 1, wx.EXPAND | wx.ALL, 20)
+        file_attached = True
+
+    def on_execute_button(event):
+        if file_attached == True:
+            # if a file is attached, editing the text editor will affect the execution
+            curr_val = text_editor.GetValue()
+            print(curr_val)
+
+            with open(path, "w") as file:
+                file.write(curr_val)
+
+            returnVal = start(path)
+
+            print("HERE")
+            print(returnVal)
             if returnVal[1][0] == False:
                 print("HEREEE")
                 print(returnVal[1])
@@ -96,7 +153,9 @@ if __name__ == "__main__":
                 )
                 joined_text.SetFont(terminal_font)
                 joined_text.SetForegroundColour("#FFFFFF")
-                terminal_context_box.Add(joined_text, 1, wx.EXPAND | wx.ALL, 10)
+                terminal_context_box.Add(start_text, 0, wx.EXPAND | wx.ALL, 10)
+                terminal_context_box.Add(joined_text, 0, wx.EXPAND | wx.ALL, 10)
+                returnVal = []
             else:
                 print("KKKK")
                 print(returnVal[1])
@@ -115,10 +174,9 @@ if __name__ == "__main__":
                 terminal_text.SetFont(terminal_font)
                 terminal_text.SetForegroundColour("#FFFFFF")
                 terminal_context_box.Add(terminal_text, 1, wx.EXPAND | wx.ALL, 20)
-        file_attached = True
-
-    def on_execute_button(event):
-        pass
+                returnVal = []
+        else:
+            pass
 
     def start(path):
         global token, lexeme, row, column, display_text
@@ -189,6 +247,8 @@ if __name__ == "__main__":
     execute_button_box.Add(
         execute_button, 0, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.BOTTOM, 10
     )
+    # bind execute button to functionality
+    execute_button.Bind(wx.EVT_BUTTON, on_execute_button)
 
     headers_font = panel.GetFont()
     headers_font.SetPointSize(8)
@@ -228,7 +288,7 @@ if __name__ == "__main__":
     terminal_title.SetForegroundColour("#FFFFFF")
     terminal_title.SetFont(terminal_font)
     terminal_box.Add(line, 0, wx.EXPAND | wx.ALL, 0)
-    terminal_box.Add(terminal_scrollpane, 0, wx.EXPAND | wx.ALL, 10)
+    terminal_box.Add(terminal_scrollpane, 1, wx.EXPAND | wx.ALL, 10)
     terminal_scrollpane.SetSizer(terminal_context_box)
     panel.SetSizer(main_horizontal_box)
     frame.Show()

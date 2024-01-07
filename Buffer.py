@@ -1,6 +1,7 @@
 class Buffer:
-    def load_buffer(self):
-        arq = open("sample_lolcodes/loops.lol", "r")
+    def load_buffer(self, path):
+        print(path)
+        arq = open(path, "r")
         text = arq.readline()
 
         buffer = []
@@ -21,4 +22,9 @@ class Buffer:
                 # Reset the buffer
                 buffer = []
 
+        # reset the file pointer to get all content of file. will be used to display content of file in UI
+        arq.seek(0)
+        whole_file = arq.read()
         arq.close()
+
+        return whole_file
