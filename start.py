@@ -85,7 +85,7 @@ if __name__ == "__main__":
             if returnVal[1][0] == False:
                 print("HEREEE")
                 print(returnVal[1])
-                terminal_content = returnVal[1]
+                terminal_content = returnVal[1][1:]
                 joined_terminal_content = "\n".join(terminal_content)
                 start_str = '> lolcode -u "' + path + '"\n'
                 start_text = wx.StaticText(terminal_scrollpane, label=start_str)
@@ -98,20 +98,23 @@ if __name__ == "__main__":
                 joined_text.SetForegroundColour("#FFFFFF")
                 terminal_context_box.Add(joined_text, 1, wx.EXPAND | wx.ALL, 10)
             else:
-                print("HEREEE")
+                print("KKKK")
                 print(returnVal[1])
-                terminal_content = returnVal[1]
+                terminal_content = []
+                for i in range(len(returnVal[1])):
+                    if i != 0:
+                        terminal_content.append(returnVal[1][i])
                 joined_terminal_content = "\n".join(terminal_content)
                 start_str = '> lolcode -u "' + path + '"\n'
                 start_text = wx.StaticText(terminal_scrollpane, label=start_str)
                 start_text.SetFont(terminal_font)
                 start_text.SetForegroundColour("#98ddeb")
-                joined_text = wx.StaticText(
+                terminal_text = wx.StaticText(
                     terminal_scrollpane, label=joined_terminal_content
                 )
-                joined_text.SetFont(terminal_font)
-                joined_text.SetForegroundColour("#FFFFFF")
-                terminal_context_box.Add(joined_text, 1, wx.EXPAND | wx.ALL, 10)
+                terminal_text.SetFont(terminal_font)
+                terminal_text.SetForegroundColour("#FFFFFF")
+                terminal_context_box.Add(terminal_text, 1, wx.EXPAND | wx.ALL, 20)
         file_attached = True
 
     def on_execute_button(event):
@@ -129,10 +132,15 @@ if __name__ == "__main__":
         # iterate through the list of lines returned by the buffer
         for i in display_text:
             t, lex, lin, col = Analyzer.tokenize(i)
-            token += t
-            lexeme += lex
-            row += lin
-            column += col
+            if t == False:
+                retVals = [t, lex]
+                returnValues = [display_text, retVals]
+                return returnValues
+            else:
+                token += t
+                lexeme += lex
+                row += lin
+                column += col
 
         print("\nRecognize Tokens: ", token)
         print("\nRecognize Lexems: ", lexeme)

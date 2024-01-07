@@ -59,6 +59,10 @@ class LexicalAnalyzer:
             elif token_type == "SKIP":
                 continue
             elif token_type == "MISMATCH":
+                error = (
+                    str(token_lexeme[0]) + " unexpected on line " + str(self.lin_num)
+                )
+                return False, error, False, False
                 raise RuntimeError(
                     "%r unexpected on line %d" % (token_lexeme, self.lin_num)
                 )
