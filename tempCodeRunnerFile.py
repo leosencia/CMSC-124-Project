@@ -1,0 +1,1 @@
+titles_hbox.Add(class_title, 1, wx.CENTRE | wx.ALL, 5)
