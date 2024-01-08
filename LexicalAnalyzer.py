@@ -14,6 +14,8 @@ class LexicalAnalyzer:
             ("WAZZUP", r"WAZZUP"),
             ("BUHBYE", r"BUHBYE"),
             ("COMMENT", r" ?BTW .*"),
+            ("MULTILINESTART", r"(?=\n(?:OBTW)\n)[\s\S]+?(?<=\n(?:TLDR)\b)"),
+            ("MULTILINEEND", r"TLDR"),
             ("VAR_DEC", r"I HAS A"),
             ("INPUT", r"GIMMEH"),
             ("ITZ", r"ITZ"),
@@ -51,7 +53,7 @@ class LexicalAnalyzer:
             ("MISMATCH", r"."),
         ]
         tokens_join = "|".join("(?P<%s>%s)" % x for x in rules)
-        # print(tokens_join)
+        print(tokens_join)
         lin_start = 0
 
         # Lists of output for the program

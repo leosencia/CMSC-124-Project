@@ -1,26 +1,13 @@
+import re
+# arq = open("sample_lolcodes/hello_world.lol", "r")
+# text = arq.read()
 
+# # for m in re.finditer(r'(?P<START>^HAI)|(?P<END>KTHXBYE$)|(?P<WAZZUP>WAZZUP)|(?P<BUHBYE>BUHBYE)|(?P<COMMENT> ?BTW .*)|(?P<MULTILINESTART>(OBTW[\w\s]+?(?=TLDR))|(?P<MULTILINEEND>TLDR)', text):
+# #     token_type = m.lastgroup
+# #     token_lexeme = m.group(token_type)
+# #     print(token_type + " lexeme: "+ token_lexeme)
+# # print(text)
 
-#reads source code and strips of whitespace and comments
-def cleanLines(filename):
-    sourceCode = open(PATH+filename, "r")
-    sourceCode = sourceCode.readlines()
-    sourceCode = cleanComments(sourceCode)
-    splitLines = []
-    for line in sourceCode:
-        line = line.split(" ")
-        splitLines.append(line)
-    print(splitLines)
-    return sourceCode
-
-#removes the BTW at the end of a line
-def cleanComments(lines): 
-    #go through each line and strip comments
-    cleaned = []
-    multiline = 0
-    for i in range(0, len(lines)):
-        line = re.sub(r' BTW .*$', "", lines[i]).strip()
-
-        if line != '':
-            cleaned.append(line)
-            #if it starts with OBTW, pop line until you reach TLDR
-    return cleaned
+p = re.compile(r'(?=\n(?:ADDITIONAL|Additional)\n)[\s\S]+?(?<=\n(?:Languages|LANGUAGES)\b)', re.MULTILINE)
+test_str = "Academy \nADDITIONAL\nAwards and Recognition: Greek Man of the Year 2011 Stanford PanHellenic Community, American Delegate 2010 Global\nEngagement Summit, Honorary Speaker 2010 SELA Convention, Semi-Finalist 2010 Strauss Foundation Scholarship Program\nComputer Skills: Competency: MATLAB, MySQL/PHP, JavaScript, Objective-C, Git Proficiency: Adobe Creative Suite, Excel\n(highly advanced), PowerPoint, HTML5/CSS3\nLanguages: Fluent English, Advanced Spanish\n\x0c"
+print(re.findall(p, test_str))
