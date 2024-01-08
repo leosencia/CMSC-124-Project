@@ -42,7 +42,7 @@ if __name__ == "__main__":
     )
     titles_panel = wx.Panel(left_panel)
     titles_hbox = wx.BoxSizer(wx.HORIZONTAL)
-    lex_title = wx.StaticText(titles_panel, label="Lexeme")
+    lex_title = wx.StaticText(titles_panel, label="   Lexeme")
     class_title = wx.StaticText(titles_panel, label="Classification")
     table_content_scrollpanel = scrolled.ScrolledPanel(left_panel, size=(200, 200))
     table_content_scrollpanel.SetupScrolling()
@@ -182,7 +182,19 @@ if __name__ == "__main__":
             lexCol = wx.StaticText(table_content_scrollpanel, label=combined_col)
             lexCol.SetFont(tables_font)
             lexCol.SetForegroundColour("#FFFFFF")
-            table_content_col1.Add(lexCol, 0, wx.ALIGN_LEFT, 10)
+            table_content_col1.Add(lexCol, 0, wx.ALIGN_LEFT, 0)
+
+            combined_col2 = ""
+            for i in range(len(token)):
+                toke = token[i].strip()  # remove trailing spaces
+                if i == 0:
+                    combined_col2 = combined_col2 + toke
+                else:
+                    combined_col2 = combined_col2 + "\n" + toke
+            lexCol2 = wx.StaticText(table_content_scrollpanel, label=combined_col2)
+            lexCol2.SetFont(tables_font)
+            lexCol2.SetForegroundColour("#FFFFFF")
+            table_content_col2.Add(lexCol2, 0, wx.ALIGN_LEFT, 0)
         elif mode == 1:
             print(mode)
             # clear the lists
@@ -277,8 +289,8 @@ if __name__ == "__main__":
     class_title.SetForegroundColour("#FFFFFF")
     lex_title.SetFont(table_titles_font)
     class_title.SetFont(table_titles_font)
-    titles_hbox.Add(lex_title, 1, wx.ALIGN_CENTER | wx.ALL, 5)
-    titles_hbox.Add(class_title, 1, wx.ALIGN_CENTER | wx.ALL, 5)
+    titles_hbox.Add(lex_title, 1, wx.ALIGN_LEFT | wx.ALL, 8)
+    titles_hbox.Add(class_title, 1, wx.ALIGN_LEFT | wx.ALL, 8)
     left_main_vbox.Add(table_content_scrollpanel, 1, wx.EXPAND | wx.ALL, 10)
     table_content_scrollpanel.SetSizer(table_content_columns)
     table_content_columns.Add(table_content_col1, 1, wx.EXPAND | wx.ALL, 10)
