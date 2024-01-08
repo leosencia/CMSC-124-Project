@@ -71,6 +71,12 @@ class LexicalAnalyzer:
             elif token_type == "SKIP":
                 continue
             elif token_type == "MISMATCH":
+                error = (
+                    str("ERROR: " + token_lexeme[0])
+                    + " unexpected on line "
+                    + str(self.lin_num)
+                )
+                return False, error, False, False
                 raise RuntimeError(
                     "%r unexpected on line %d" % (token_lexeme, self.lin_num)
                 )
@@ -81,10 +87,10 @@ class LexicalAnalyzer:
                 lexeme.append(token_lexeme)
                 row.append(self.lin_num)
                 # To print information about a Token
-                print(
-                    "Token = {0}, Lexeme = '{1}', Row = {2}, Column = {3}".format(
-                        token_type, token_lexeme, self.lin_num, col
-                    )
-                )
+                # print(
+                #     "Token = {0}, Lexeme = '{1}', Row = {2}, Column = {3}".format(
+                #         token_type, token_lexeme, self.lin_num, col
+                #     )
+                # )
 
         return token, lexeme, row, column
