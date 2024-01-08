@@ -79,9 +79,9 @@ class LexicalAnalyzer:
                     + str(self.lin_num)
                 )
                 return False, error, False, False
-                raise RuntimeError(
-                    "%r unexpected on line %d" % (token_lexeme, self.lin_num)
-                )
+                # raise RuntimeError(
+                #     "%r unexpected on line %d" % (token_lexeme, self.lin_num)
+                # )
             else:
                 col = m.start() - lin_start
                 column.append(col)
