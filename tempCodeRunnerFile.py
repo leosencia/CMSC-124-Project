@@ -1,0 +1,1 @@
+le=wx.LI_HORIZONTAL)

@@ -44,6 +44,11 @@ if __name__ == "__main__":
     titles_hbox = wx.BoxSizer(wx.HORIZONTAL)
     lex_title = wx.StaticText(titles_panel, label="Lexeme")
     class_title = wx.StaticText(titles_panel, label="Classification")
+    table_content_scrollpanel = scrolled.ScrolledPanel(left_panel, size=(200, 200))
+    table_content_scrollpanel.SetupScrolling()
+    table_content_columns = wx.BoxSizer(wx.HORIZONTAL)
+    table_content_col1 = wx.BoxSizer(wx.VERTICAL)
+    table_content_col2 = wx.BoxSizer(wx.VERTICAL)
     terminal_panel = wx.Panel(panel)
     terminal_title = wx.StaticText(terminal_panel, label="TERMINAL")
     terminal_box = wx.BoxSizer(wx.VERTICAL)
@@ -65,6 +70,10 @@ if __name__ == "__main__":
         encoding=wx.FONTENCODING_DEFAULT,
     )
 
+    tables_font = panel.GetFont()
+    tables_font.SetPointSize(8)
+    tables_font.SetWeight(wx.FONTWEIGHT_NORMAL)
+
     line = wx.StaticLine(terminal_panel, size=(400, -1), style=wx.LI_HORIZONTAL)
 
     def on_attach_file_button(event):
@@ -82,48 +91,10 @@ if __name__ == "__main__":
             path = fileDialog.GetPath()
 
             print(f"Selected file: {path}")
-            returnVal = start(path)
-            print("THis is the display text:")
-            print(returnVal[0])
+            returnVal = start(path, 2)
             text_editor.SetValue("".join(returnVal[0]))
+            returnVal = None
 
-            # # TODO: transfer the following code to the execute button
-            # print("HERE")
-            # print(returnVal)
-            # if returnVal[1][0] == False:
-            #     print("HEREEE")
-            #     print(returnVal[1])
-            #     terminal_content = returnVal[1][1:]
-            #     joined_terminal_content = "\n".join(terminal_content)
-            #     start_str = '> lolcode -u "' + path + '"\n'
-            #     start_text = wx.StaticText(terminal_scrollpane, label=start_str)
-            #     start_text.SetFont(terminal_font)
-            #     start_text.SetForegroundColour("#98ddeb")
-            #     joined_text = wx.StaticText(
-            #         terminal_scrollpane, label=joined_terminal_content
-            #     )
-            #     joined_text.SetFont(terminal_font)
-            #     joined_text.SetForegroundColour("#FFFFFF")
-            #     terminal_context_box.Add(start_text, 0, wx.EXPAND | wx.ALL, 10)
-            #     terminal_context_box.Add(joined_text, 0, wx.EXPAND | wx.ALL, 10)
-            # else:
-            #     print("KKKK")
-            #     print(returnVal[1])
-            #     terminal_content = []
-            #     for i in range(len(returnVal[1])):
-            #         if i != 0:
-            #             terminal_content.append(returnVal[1][i])
-            #     joined_terminal_content = "\n".join(terminal_content)
-            #     start_str = '> lolcode -u "' + path + '"\n'
-            #     start_text = wx.StaticText(terminal_scrollpane, label=start_str)
-            #     start_text.SetFont(terminal_font)
-            #     start_text.SetForegroundColour("#98ddeb")
-            #     terminal_text = wx.StaticText(
-            #         terminal_scrollpane, label=joined_terminal_content
-            #     )
-            #     terminal_text.SetFont(terminal_font)
-            #     terminal_text.SetForegroundColour("#FFFFFF")
-            #     terminal_context_box.Add(terminal_text, 1, wx.EXPAND | wx.ALL, 20)
         file_attached = True
 
     def on_execute_button(event):
@@ -135,14 +106,16 @@ if __name__ == "__main__":
             with open(path, "w") as file:
                 file.write(curr_val)
 
-            returnVal = start(path)
-
-            print("HERE")
+            print("Executing in mode 1")
+            returnVal = start(path, 1)
             print(returnVal)
-            if returnVal[1][0] == False:
+            if returnVal[0][0] == False:
                 print("HEREEE")
-                print(returnVal[1])
-                terminal_content = returnVal[1][1:]
+                print(returnVal)
+                terminal_content = []
+                for i in range(len(returnVal[0])):
+                    if i != 0:
+                        terminal_content.append(returnVal[0][i])
                 joined_terminal_content = "\n".join(terminal_content)
                 start_str = '> lolcode -u "' + path + '"\n'
                 start_text = wx.StaticText(terminal_scrollpane, label=start_str)
@@ -158,11 +131,11 @@ if __name__ == "__main__":
                 returnVal = []
             else:
                 print("KKKK")
-                print(returnVal[1])
+                print(returnVal)
                 terminal_content = []
-                for i in range(len(returnVal[1])):
+                for i in range(len(returnVal[0])):
                     if i != 0:
-                        terminal_content.append(returnVal[1][i])
+                        terminal_content.append(returnVal[0][i])
                 joined_terminal_content = "\n".join(terminal_content)
                 start_str = '> lolcode -u "' + path + '"\n'
                 start_text = wx.StaticText(terminal_scrollpane, label=start_str)
@@ -178,34 +151,60 @@ if __name__ == "__main__":
         else:
             pass
 
-    def start(path):
+    def start(path, mode):
         global token, lexeme, row, column, display_text
-        # Tokenize and reload of the buffer
-        display_text = list(Buffer.load_buffer(path))
-        # clear the lists
-        token.clear()
-        lexeme.clear()
-        row.clear()
-        column.clear()
-        # iterate through the list of lines returned by the buffer
-        for i in display_text:
-            t, lex, lin, col = Analyzer.tokenize(i)
-            if t == False:
-                retVals = [t, lex]
-                returnValues = [display_text, retVals]
-                return returnValues
-            else:
-                token += t
-                lexeme += lex
-                row += lin
-                column += col
+        if mode == 2:
+            # clear the lists
+            token.clear()
+            lexeme.clear()
+            row.clear()
+            column.clear()
 
-        print("\nRecognize Tokens: ", token)
-        print("\nRecognize Lexems: ", lexeme)
-        # print('\nRecognize row: ', row)
-        # print('\nRecognize col: ', column)
-        retVals = Syntax.program(token, lexeme, row)
-        returnValues = [display_text, retVals]
+            # Tokenize and reload of the buffer
+            display_text = list(Buffer.load_buffer(path, mode))
+            returnValues = [display_text]
+            for i in display_text:
+                t, lex, lin, col = Analyzer.tokenize(i)
+                if t == False:
+                    continue
+                else:
+                    token += t
+                    lexeme += lex
+                    row += lin
+                    column += col
+            combined_col = ""
+            for i in range(len(lexeme)):
+                lex = lexeme[i].strip()  # remove trailing spaces
+                if i == 0:
+                    combined_col = combined_col + lex
+                else:
+                    combined_col = combined_col + "\n" + lex
+            lexCol = wx.StaticText(table_content_scrollpanel, label=combined_col)
+            lexCol.SetFont(tables_font)
+            lexCol.SetForegroundColour("#FFFFFF")
+            table_content_col1.Add(lexCol, 0, wx.ALIGN_LEFT, 10)
+        elif mode == 1:
+            print(mode)
+            # clear the lists
+            token.clear()
+            lexeme.clear()
+            row.clear()
+            column.clear()
+            # iterate through the list of lines returned by the buffer
+            for i in Buffer.load_buffer(path, mode):
+                t, lex, lin, col = Analyzer.tokenize(i)
+                if t == False:
+                    retVals = [t, lex]
+                    returnValues = [retVals]
+                    return returnValues
+                else:
+                    token += t
+                    lexeme += lex
+                    row += lin
+                    column += col
+
+            retVals = Syntax.program(token, lexeme, row)
+            returnValues = [retVals]
         return returnValues
 
     # rest of GUI-related code
@@ -280,7 +279,10 @@ if __name__ == "__main__":
     class_title.SetFont(table_titles_font)
     titles_hbox.Add(lex_title, 1, wx.ALIGN_CENTER | wx.ALL, 5)
     titles_hbox.Add(class_title, 1, wx.ALIGN_CENTER | wx.ALL, 5)
-
+    left_main_vbox.Add(table_content_scrollpanel, 1, wx.EXPAND | wx.ALL, 10)
+    table_content_scrollpanel.SetSizer(table_content_columns)
+    table_content_columns.Add(table_content_col1, 1, wx.EXPAND | wx.ALL, 10)
+    table_content_columns.Add(table_content_col2, 1, wx.EXPAND | wx.ALL, 10)
     # terminal_box.Add(terminal_panel, 1, wx.EXPAND | wx.ALL, 0)
     terminal_panel.SetBackgroundColour("#55828B")
     terminal_panel.SetSizer(terminal_box)
