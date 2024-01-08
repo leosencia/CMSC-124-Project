@@ -10,9 +10,11 @@ HAI
   VISIBLE "HAI WORLD!!!1!" BTW THIS IS YEYEYE
   BTW I HAS A var2 ITZ -4.60
   BTW I HAS A var ITZ "hello"
+  OBTW
   VISIBLE "TESTINGGG"
   VISIBLE WIN
   VISIBLE 10
   VISIBLE -69.20
+  TLDR
   VISIBLE "The one who climbed " xueMeng " is " chuWanning " an " moRan
 KTHXBYE
