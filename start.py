@@ -20,6 +20,7 @@ if __name__ == "__main__":
     txt_ctrl_val = ""
     file_attached = False
     returnVal = []
+    variables = []
 
     # these variables are instantiated early because of scope issues
     app = wx.App()
@@ -41,14 +42,23 @@ if __name__ == "__main__":
         left_panel, label="LEXEMES AND SYMBOLS", style=wx.ALIGN_LEFT
     )
     titles_panel = wx.Panel(left_panel)
+    titles2_panel = wx.Panel(left_panel)
     titles_hbox = wx.BoxSizer(wx.HORIZONTAL)
+    titles2_hbox = wx.BoxSizer(wx.HORIZONTAL)
     lex_title = wx.StaticText(titles_panel, label="   Lexeme")
     class_title = wx.StaticText(titles_panel, label="Classification")
+    ident_title = wx.StaticText(titles2_panel, label="   Identifier")
+    val_title = wx.StaticText(titles2_panel, label="Value")
     table_content_scrollpanel = scrolled.ScrolledPanel(left_panel, size=(200, 200))
     table_content_scrollpanel.SetupScrolling()
+    table2_content_scrollpanel = scrolled.ScrolledPanel(left_panel, size=(200, 200))
+    table2_content_scrollpanel.SetupScrolling()
     table_content_columns = wx.BoxSizer(wx.HORIZONTAL)
+    table2_content_columns = wx.BoxSizer(wx.HORIZONTAL)
     table_content_col1 = wx.BoxSizer(wx.VERTICAL)
+    table2_content_col1 = wx.BoxSizer(wx.VERTICAL)
     table_content_col2 = wx.BoxSizer(wx.VERTICAL)
+    table2_content_col2 = wx.BoxSizer(wx.VERTICAL)
     terminal_panel = wx.Panel(panel)
     terminal_title = wx.StaticText(terminal_panel, label="TERMINAL")
     terminal_box = wx.BoxSizer(wx.VERTICAL)
@@ -77,7 +87,8 @@ if __name__ == "__main__":
     line = wx.StaticLine(terminal_panel, size=(400, -1), style=wx.LI_HORIZONTAL)
 
     def on_attach_file_button(event):
-        global path, txt_ctrl_val, text_editor, file_attached, returnVal
+        global path, txt_ctrl_val, text_editor, file_attached, returnVal, variables
+        variables = []
         returnVal = []
         path = None
         with wx.FileDialog(
@@ -98,17 +109,23 @@ if __name__ == "__main__":
         file_attached = True
 
     def on_execute_button(event):
+        global variables
+        variables = []
+        # clear terminal_context_box
+        terminal_context_box.Clear(True)
+        table2_content_col1.Clear(True)
+        table2_content_col2.Clear(True)
         if file_attached == True:
             # if a file is attached, editing the text editor will affect the execution
             curr_val = text_editor.GetValue()
-            print(curr_val)
+            # print(curr_val)
 
             with open(path, "w") as file:
                 file.write(curr_val)
 
-            print("Executing in mode 1")
+            # print("Executing in mode 1")
             returnVal = start(path, 1)
-            print(returnVal)
+            # print(returnVal)
             if returnVal[0][0] == False:
                 print("HEREEE")
                 print(returnVal)
@@ -116,6 +133,16 @@ if __name__ == "__main__":
                 for i in range(len(returnVal[0])):
                     if type(returnVal[0][i]) == str:
                         terminal_content.append(returnVal[0][i])
+                    if type(returnVal[0][i]) == list:
+                        for j in range(len(returnVal[0][i])):
+                            # print(returnVal[0][i][j].name)
+                            # print("Value: ", returnVal[0][i][j].value)
+                            # print("Data type: ", returnVal[0][i][j].dataType)
+                            var = []
+                            var.append(returnVal[0][i][j].name)
+                            var.append(returnVal[0][i][j].value)
+                            variables.append(var)
+
                 joined_terminal_content = "\n".join(terminal_content)
                 start_str = '> lolcode -u "' + path + '"\n'
                 start_text = wx.StaticText(terminal_scrollpane, label=start_str)
@@ -136,7 +163,13 @@ if __name__ == "__main__":
                 for i in range(len(returnVal[0])):
                     if type(returnVal[0][i]) == str:
                         terminal_content.append(returnVal[0][i])
-                print(terminal_content)
+                    if type(returnVal[0][i]) == list:
+                        for j in range(len(returnVal[0][i])):
+                            var = []
+                            var.append(returnVal[0][i][j].name)
+                            var.append(returnVal[0][i][j].value)
+                            variables.append(var)
+                # print(terminal_content)
                 joined_terminal_content = "\n".join(terminal_content)
                 start_str = '> lolcode -u "' + path + '"\n'
                 start_text = wx.StaticText(terminal_scrollpane, label=start_str)
@@ -151,6 +184,33 @@ if __name__ == "__main__":
                 returnVal = []
         else:
             pass
+        print(variables)
+        combined_col = ""
+        combined_col2 = ""
+        print(variables)
+        for i in range(len(variables)):
+            ident = variables[i][0].strip()  # remove trailing spaces
+            if type(variables[i][1]) == str:
+                val = variables[i][1].strip()  # remove trailing spaces
+            else:
+                val = str(variables[i][1])
+            if i == 0:
+                combined_col = combined_col + ident
+                combined_col2 = combined_col2 + val
+            else:
+                combined_col = combined_col + "\n" + ident
+                combined_col2 = combined_col2 + "\n" + val
+        print("combined col: ", combined_col)
+        print("combined col2: ", combined_col2)
+        identCol = wx.StaticText(table2_content_scrollpanel, label=combined_col)
+        identCol.SetFont(tables_font)
+        identCol.SetForegroundColour("#FFFFFF")
+        table2_content_col1.Add(identCol, 0, wx.ALIGN_LEFT, 0)
+
+        valCol = wx.StaticText(table2_content_scrollpanel, label=combined_col2)
+        valCol.SetFont(tables_font)
+        valCol.SetForegroundColour("#FFFFFF")
+        table2_content_col2.Add(valCol, 0, wx.ALIGN_LEFT, 0)
 
     def start(path, mode):
         global token, lexeme, row, column, display_text
@@ -160,6 +220,8 @@ if __name__ == "__main__":
             lexeme.clear()
             row.clear()
             column.clear()
+            table_content_col1.Clear(True)
+            table_content_col2.Clear(True)
 
             # Tokenize and reload of the buffer
             display_text = list(Buffer.load_buffer(path, mode))
@@ -197,7 +259,7 @@ if __name__ == "__main__":
             lexCol2.SetForegroundColour("#FFFFFF")
             table_content_col2.Add(lexCol2, 0, wx.ALIGN_LEFT, 0)
         elif mode == 1:
-            print(mode)
+            # print(mode)
             # clear the lists
             token.clear()
             lexeme.clear()
@@ -282,20 +344,33 @@ if __name__ == "__main__":
     # left_main_vbox.Add(titles1_hbox, 1, wx.ALL, 10)
 
     titles_panel.SetBackgroundColour("#62929e")
+    titles2_panel.SetBackgroundColour("#62929e")
     left_main_vbox.Add(titles_panel, 0, wx.EXPAND | wx.ALL, 0)
 
     titles_panel.SetSizer(titles_hbox)
+    titles2_panel.SetSizer(titles2_hbox)
 
     lex_title.SetForegroundColour("#FFFFFF")
     class_title.SetForegroundColour("#FFFFFF")
+    ident_title.SetForegroundColour("#FFFFFF")
+    val_title.SetForegroundColour("#FFFFFF")
     lex_title.SetFont(table_titles_font)
     class_title.SetFont(table_titles_font)
+    ident_title.SetFont(table_titles_font)
+    val_title.SetFont(table_titles_font)
     titles_hbox.Add(lex_title, 1, wx.ALIGN_LEFT | wx.ALL, 8)
     titles_hbox.Add(class_title, 1, wx.ALIGN_LEFT | wx.ALL, 8)
-    left_main_vbox.Add(table_content_scrollpanel, 1, wx.EXPAND | wx.ALL, 10)
+    titles2_hbox.Add(ident_title, 1, wx.ALIGN_LEFT | wx.ALL, 8)
+    titles2_hbox.Add(val_title, 1, wx.ALIGN_LEFT | wx.ALL, 8)
+    left_main_vbox.Add(table_content_scrollpanel, 2, wx.EXPAND | wx.ALL, 10)
+    left_main_vbox.Add(titles2_panel, 0, wx.EXPAND | wx.ALL, 0)
+    left_main_vbox.Add(table2_content_scrollpanel, 1, wx.EXPAND | wx.ALL, 10)
     table_content_scrollpanel.SetSizer(table_content_columns)
+    table2_content_scrollpanel.SetSizer(table2_content_columns)
     table_content_columns.Add(table_content_col1, 1, wx.EXPAND | wx.ALL, 10)
     table_content_columns.Add(table_content_col2, 1, wx.EXPAND | wx.ALL, 10)
+    table2_content_columns.Add(table2_content_col1, 1, wx.EXPAND | wx.ALL, 10)
+    table2_content_columns.Add(table2_content_col2, 1, wx.EXPAND | wx.ALL, 10)
     # terminal_box.Add(terminal_panel, 1, wx.EXPAND | wx.ALL, 0)
     terminal_panel.SetBackgroundColour("#55828B")
     terminal_panel.SetSizer(terminal_box)
