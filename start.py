@@ -114,7 +114,7 @@ if __name__ == "__main__":
                 print(returnVal)
                 terminal_content = []
                 for i in range(len(returnVal[0])):
-                    if i != 0:
+                    if type(returnVal[0][i]) == str:
                         terminal_content.append(returnVal[0][i])
                 joined_terminal_content = "\n".join(terminal_content)
                 start_str = '> lolcode -u "' + path + '"\n'
@@ -134,8 +134,9 @@ if __name__ == "__main__":
                 print(returnVal)
                 terminal_content = []
                 for i in range(len(returnVal[0])):
-                    if i != 0:
+                    if type(returnVal[0][i]) == str:
                         terminal_content.append(returnVal[0][i])
+                print(terminal_content)
                 joined_terminal_content = "\n".join(terminal_content)
                 start_str = '> lolcode -u "' + path + '"\n'
                 start_text = wx.StaticText(terminal_scrollpane, label=start_str)

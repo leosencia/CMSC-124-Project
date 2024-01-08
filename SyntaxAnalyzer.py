@@ -27,14 +27,22 @@ class SyntaxAnalyzer:
                     continue
                 if tokens[i] == "IFELSE":
                     # enter ifelse block
+                    returnVals = []
                     i = ifElse(tokens, lexeme, row, i)
                 elif tokens[i] == "INLOOP":
                     i = loop(tokens, lexeme, row, i)
                 else:
                     i = statement(tokens, lexeme, row, i)
-                if i >= len(tokens):
-                    print("Aaaaa")
-                    break
+                if type(i) == list:
+                    print(i)
+                    if i[len(i) - 1] >= len(tokens):
+                        print("Aaaaa")
+                        break
+                else:
+                    if i >= len(tokens):
+                        print("ARGHHH")
+                        break
+
             if i == len(tokens):
                 returnVals[0] = True
 
@@ -261,6 +269,7 @@ def ifElse(tokens, lexeme, row, i):
                     returnVals.append(
                         "ERROR: Expected OIC encountered end of file instead"
                     )
+                    returnVals.append(i)
                     return returnVals
                     # raise RuntimeError("Expected OIC encountered end of file instead")
             if tokens[i] == "IFFALSE":
@@ -272,6 +281,7 @@ def ifElse(tokens, lexeme, row, i):
                         returnVals.append(
                             "ERROR: Expected OIC encountered end of file instead"
                         )
+                        returnVals.append(i)
                         return returnVals
                         # raise RuntimeError(
                         #     "Expected OIC encountered end of file instead"
@@ -282,12 +292,22 @@ def ifElse(tokens, lexeme, row, i):
             while tokens[i] != "IFFALSE":
                 i += 1
                 if i >= maxlen:
-                    returnVals[0] = True
+                    if len(returnVals) != 0:
+                        returnVals[0] = True
 
-                    returnVals.append(
-                        "ERROR: Expected NO WAI encountered end of file instead"
-                    )
-                    return returnVals
+                        returnVals.append(
+                            "ERROR: Expected NO WAI encountered end of file instead"
+                        )
+                        returnVals.append(i)
+                        return returnVals
+                    else:
+                        returnVals.append(True)
+
+                        returnVals.append(
+                            "ERROR: Expected NO WAI encountered end of file instead"
+                        )
+                        returnVals.append(i)
+                        return returnVals
                     # raise RuntimeError(
                     #     "Expected NO WAI encountered end of file instead"
                     # )
@@ -300,6 +320,7 @@ def ifElse(tokens, lexeme, row, i):
                     returnVals.append(
                         "ERROR: Expected OIC encountered end of file instead"
                     )
+                    returnVals.append(i)
                     return returnVals
                     # raise RuntimeError("Expected OIC encountered end of file instead")
     else:
@@ -308,6 +329,7 @@ def ifElse(tokens, lexeme, row, i):
         returnVals.append(
             "ERROR: Unexpected " + str(tokens[i]) + " in line " + str(row[i])
         )
+        returnVals.append(i)
         return returnVals
         # raise RuntimeError("Unexpected %r in line %d" % (tokens[i], row[i]))
     return i
@@ -372,6 +394,7 @@ def storeVariable(tline, line, rowNum):
 
     if i >= maxlength:
         vars.append(Variable(varName, "NOOB", None))
+        print("Variables: ", vars)
         return
 
     if tline[i] == "ITZ":
@@ -389,12 +412,12 @@ def storeVariable(tline, line, rowNum):
         returnVals.append("ERROR: Variable must have a value!")
         return returnVals
         # raise RuntimeError("Variable must have a value!")
-
+    print("Vars: ", vars)
     storing(varName, tline, line, i, rowNum)
 
 
 def storing(varName, tline, line, i, rowNum):
-    global returnVals
+    global vars, returnVals
     if tline[i] == "NOOB" or tline[i] == "YARN" or tline[i] == "TROOF":
         type = tline[i]
         value = line[i]
@@ -1187,8 +1210,14 @@ def mathOp(line, tline, i, rowNum):
     actual_operands = len(op) - (num_of_AN + num_of_operations)
     if expected_operands != actual_operands:
         returnVals[0] = True
-        returnVals.append("Expected %d operands, but found %d at line %d"
-                        % (expected_operands, actual_operands, rowNum))
+        returnVals.append(
+            "Expected ",
+            +str(expected_operands),
+            " operands, but found ",
+            str(actual_operands),
+            " at line ",
+            str(rowNum),
+        )
         return returnVals
         # raise RuntimeError(
         #     "Expected %d operands, but found %d at line %d"
@@ -1253,10 +1282,10 @@ def boolOp(line, tline, i, rowNum):
         returnVals.append(
             "ERROR: Unexpected " + str(line[i]) + " at line " + str(rowNum)
         )
-        
-        return i,returnVals
+
+        return i, returnVals
         # raise RuntimeError("Unexpected %r at line %d" % (line[i], rowNum))
-        
+
 
 def boolOpRegion(line, tline, i, rowNum):
     global returnVals
@@ -1353,9 +1382,7 @@ def printLine(line, tline, rowNum):
             else:
                 returnVals[0] = True
 
-                returnVals.append(
-                    "ERROR: Error: Type " + str(tline[i]) + " cannot be printed"
-                )
+                returnVals.append("ERROR: Type " + str(tline[i]) + " cannot be printed")
                 return returnVals
                 # raise RuntimeError("Type %r cannot be printed" % (tline[i]))
 
