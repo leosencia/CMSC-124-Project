@@ -3,10 +3,13 @@ from Variable import Variable
 from collections import deque
 
 vars = [Variable("IT", "NOOB", "")]
+returnVals = [False]
 
 
 class SyntaxAnalyzer:
     def program(self, tokens, lexeme, row):
+        global returnVals
+        returnVals = [False]
         i = 0
 
         while tokens[i] == "COMMENT":
@@ -23,7 +26,7 @@ class SyntaxAnalyzer:
                     i += 1
                     continue
                 if tokens[i] == "IFELSE":
-                    #enter ifelse block
+                    # enter ifelse block
                     i = ifElse(tokens, lexeme, row, i)
                 elif tokens[i] == "INLOOP":
                     i = loop(tokens, lexeme, row, i)
@@ -33,70 +36,181 @@ class SyntaxAnalyzer:
                     print("Aaaaa")
                     break
             if i == len(tokens):
+                returnVals[0] = True
+
+                returnVals.append("ERROR: End of program not found")
+                return returnVals
                 raise RuntimeError("End of program not found")
             # printVariables()
         else:
+            returnVals[0] = True
+
+            returnVals.append("ERROR: Start of program not found")
+            return returnVals
             raise RuntimeError("Start of program not found")
+        return returnVals
+
 
 def loop(tokens, lexeme, row, i):
+    global returnVals
     rowNum = row[i]
     i += 1
 
-    if tokens[i] != "VARIABLE" or row[i] != rowNum: raise RuntimeError("Unexpected %r in line %d. Expected a loop label instead" % (tokens[i], row[i]))
-    #if variable
+    if tokens[i] != "VARIABLE" or row[i] != rowNum:
+        returnVals[0] = True
+
+        returnVals.append(
+            "ERROR: Unexpected "
+            + str(tokens[i])
+            + " in line "
+            + str(row[i])
+            + ". Expected a loop label instead"
+        )
+        return returnVals
+        raise RuntimeError(
+            "Unexpected %r in line %d. Expected a loop label instead"
+            % (tokens[i], row[i])
+        )
+    # if variable
     loop_label = lexeme[i].strip()
     i += 1
     if tokens[i] == "INCR" and row[i] == rowNum:
         add = 1
     elif tokens[i] == "DECR" and row[i] == rowNum:
         add = -1
-    else: raise RuntimeError("Unexpected %r in line %d. Expected UPPIN YR or NERFIN YR" % (tokens[i], row[i]))
-    i+=1
+    else:
+        returnVals[0] = True
+
+        returnVals.append(
+            "ERROR: Unexpected "
+            + str(tokens[i])
+            + " in line "
+            + str(row[i])
+            + ". Expected UPPIN YR or NERFIN YR"
+        )
+        return returnVals
+        raise RuntimeError(
+            "Unexpected %r in line %d. Expected UPPIN YR or NERFIN YR"
+            % (tokens[i], row[i])
+        )
+    i += 1
 
     if tokens[i] == "VARIABLE" and row[i] == rowNum:
-        #temp var
+        # temp var
         varName = lexeme[i]
         value, type = searchVarValue(lexeme[i])
         i += 1
-    else: raise RuntimeError("Unexpected %r in line %d. Expected a VARIABLE" % (tokens[i], row[i]))
-    
+    else:
+        returnVals[0] = True
+
+        returnVals.append(
+            "ERROR: Unexpected "
+            + str(tokens[i])
+            + " in line "
+            + str(row[i])
+            + ". Expected a VARIABLE"
+        )
+        return returnVals
+        raise RuntimeError(
+            "Unexpected %r in line %d. Expected a VARIABLE" % (tokens[i], row[i])
+        )
+
     if tokens[i] == "WILE" and row[i] == rowNum:
         cond = True
         # print("running while true")
     elif tokens[i] == "TIL" and row[i] == rowNum:
         cond = False
         # print("running while false")
-    else: raise RuntimeError("Unexpected %r in line %d. Expected WILE or TIL" % (tokens[i], row[i]))
+    else:
+        returnVals[0] = True
+
+        returnVals.append(
+            "ERROR: Unexpected "
+            + str(tokens[i])
+            + " in line "
+            + str(row[i])
+            + ". Expected WILE or TIL"
+        )
+        return returnVals
+        raise RuntimeError(
+            "Unexpected %r in line %d. Expected WILE or TIL" % (tokens[i], row[i])
+        )
 
     i += 1
     condline = []
     condtoken = []
     condrow = rowNum
-    #get rest of line so conditional
+    # get rest of line so conditional
     while rowNum == row[i]:
         condline.append(lexeme[i])
         condtoken.append(tokens[i])
-        i+=1
-        if i == len(lexeme): break
+        i += 1
+        if i == len(lexeme):
+            break
 
-    if condtoken[0] == "BOOL_OPER" or condtoken[0] == "COMPARISON" or condtoken[0] == "MATH":
-        #INITIALIZE THE CONDITION VALUE
+    if (
+        condtoken[0] == "BOOL_OPER"
+        or condtoken[0] == "COMPARISON"
+        or condtoken[0] == "MATH"
+    ):
+        # INITIALIZE THE CONDITION VALUE
         condval, condtype = expression(condline, condtoken, 0, condrow)
-        if condtype != "TROOF":condval = typeCasting(condval, condtype, "TROOF", condrow)
+        if condtype != "TROOF":
+            condval = typeCasting(condval, condtype, "TROOF", condrow)
         condval = True if condval == "WIN" else False
         while condval == cond:
             codeblockindex = i
             rowNum = row[i]
             while True:
                 i = statement(tokens, lexeme, row, i)
-                
+
                 if i >= len(tokens):
-                    raise RuntimeError("End of file encountered! Expected loop delimiter")
-                if tokens[i] == "OUTLOOP" and tokens[i+1] == "VARIABLE":
-                    if row[i+1] != row[i]: raise RuntimeError("Unexpected newline in line %d", row[i])
-                    if lexeme[i+1] != loop_label: raise RuntimeError("Expected %r in line %d. Encountered %r instead." % (loop_label, row[i], lexeme[i+1]))
+                    returnVals[0] = True
+
+                    returnVals.append(
+                        "ERROR: End of file encountered! Expected loop delimiter"
+                    )
+                    return returnVals
+                    raise RuntimeError(
+                        "End of file encountered! Expected loop delimiter"
+                    )
+                if tokens[i] == "OUTLOOP" and tokens[i + 1] == "VARIABLE":
+                    if row[i + 1] != row[i]:
+                        returnVals[0] = True
+
+                        returnVals.append(
+                            "ERROR: Unexpected newline in line " + str(row[i + 1])
+                        )
+                        return returnVals
+                        raise RuntimeError("Unexpected newline in line %d", row[i])
+                    if lexeme[i + 1] != loop_label:
+                        returnVals[0] = True
+
+                        returnVals.append(
+                            "ERROR: Expected "
+                            + loop_label
+                            + " in line "
+                            + str(row[i])
+                            + ". Encountered "
+                            + str(lexeme[i + 1])
+                            + " instead."
+                        )
+                        return returnVals
+                        raise RuntimeError(
+                            "Expected %r in line %d. Encountered %r instead."
+                            % (loop_label, row[i], lexeme[i + 1])
+                        )
                     break
-                elif tokens[i] == "KTHXBYE": raise RuntimeError("End of program encountered! Expected loop delimiter")
+                elif tokens[i] == "KTHXBYE":
+                    returnVals[0] = True
+
+                    returnVals.append(
+                        "ERROR: End of program encountered! Expected loop delimiter"
+                    )
+                    return returnVals
+                    raise RuntimeError(
+                        "End of program encountered! Expected loop delimiter"
+                    )
             value += add
             # print("val: " + str(value) + " i: "+ str(i) + " rowNum: "+ str(rowNum) + " row[i]: "+ str(row[i]))
             storeVariables(varName.strip(), type, value)
@@ -104,54 +218,103 @@ def loop(tokens, lexeme, row, i):
             condval, condtype = expression(condline, condtoken, 0, condrow)
 
             # print("condval2:"+ condval)
-            if condtype != "TROOF": condval = typeCasting(condval, condtype, "TROOF", condrow)
+            if condtype != "TROOF":
+                condval = typeCasting(condval, condtype, "TROOF", condrow)
             condval = True if condval == "WIN" else False
             # print("condval: "+str(condval)+" cond: "+str(cond))
             if condval != cond:
                 return i
-            i = codeblockindex            
-    else: raise RuntimeError("Unpexected %r in line %d expected a Boolean operation or comparison operation" % (condtoken[0], rowNum))
+            i = codeblockindex
+    else:
+        returnVals[0] = True
+
+        returnVals.append(
+            "ERROR: Unexpected " + str(condtoken[0]) + " in line " + str(rowNum)
+        )
+        return returnVals
+        raise RuntimeError(
+            "Unpexected %r in line %d expected a Boolean operation or comparison operation"
+            % (condtoken[0], rowNum)
+        )
+
 
 def ifElse(tokens, lexeme, row, i):
-    #get conditional value in IT
+    global returnVals
+    # get conditional value in IT
     cond, type = searchVarValue("IT")
     if type != "TROOF":
-        cond = typeCasting(cond, type, "TROOF", row[i-1])
-    
+        cond = typeCasting(cond, type, "TROOF", row[i - 1])
+
     cond = True if cond == "WIN" else False
     maxlen = len(tokens)
     i += 1
     print(cond)
-    #run this while you haven't encountered OIC
-    if cond == True: #YA RLY
+    # run this while you haven't encountered OIC
+    if cond == True:  # YA RLY
         if tokens[i] == "IFTRUE":
             while tokens[i] != "ENDIFELSE" and tokens[i] != "IFFALSE":
                 i = statement(tokens, lexeme, row, i)
-                
+
                 if i >= maxlen:
+                    returnVals[0] = True
+
+                    returnVals.append(
+                        "ERROR: Expected OIC encountered end of file instead"
+                    )
+                    return returnVals
                     raise RuntimeError("Expected OIC encountered end of file instead")
             if tokens[i] == "IFFALSE":
                 while tokens[i] != "ENDIFELSE":
-                    i+=1
+                    i += 1
                     if i >= maxlen:
-                        raise RuntimeError("Expected OIC encountered end of file instead")
-                return i    
+                        returnVals[0] = True
+
+                        returnVals.append(
+                            "ERROR: Expected OIC encountered end of file instead"
+                        )
+                        return returnVals
+                        raise RuntimeError(
+                            "Expected OIC encountered end of file instead"
+                        )
+                return i
     elif cond == False:
         if tokens[i] == "IFTRUE":
             while tokens[i] != "IFFALSE":
                 i += 1
                 if i >= maxlen:
-                    raise RuntimeError("Expected NO WAI encountered end of file instead")
-            #if NO WAI is encountered
+                    returnVals[0] = True
+
+                    returnVals.append(
+                        "ERROR: Expected NO WAI encountered end of file instead"
+                    )
+                    return returnVals
+                    raise RuntimeError(
+                        "Expected NO WAI encountered end of file instead"
+                    )
+            # if NO WAI is encountered
             while tokens[i] != "ENDIFELSE":
                 i = statement(tokens, lexeme, row, i)
                 if i >= maxlen:
+                    returnVals[0] = True
+
+                    returnVals.append(
+                        "ERROR: Expected OIC encountered end of file instead"
+                    )
+                    return returnVals
                     raise RuntimeError("Expected OIC encountered end of file instead")
     else:
+        returnVals[0] = True
+
+        returnVals.append(
+            "ERROR: Unexpected " + str(tokens[i]) + " in line " + str(row[i])
+        )
+        return returnVals
         raise RuntimeError("Unexpected %r in line %d" % (tokens[i], row[i]))
     return i
 
+
 def isVarDec(tokens, lexeme, row, i):
+    global returnVals
     maxlen = len(tokens)
     while tokens[i] != "BUHBYE":
         if tokens[i] == "COMMENT":  # aka BTW (single line comment)
@@ -169,23 +332,42 @@ def isVarDec(tokens, lexeme, row, i):
                 i += 1
             storeVariable(tline, line, rowNum)
         else:
+            returnVals[0] = True
+
+            returnVals.append(
+                "Unexpected "
+                + str(lexeme[i])
+                + " on line "
+                + str(row[i])
+                + ". Only variable declarations are allowed in this section"
+            )
+            return returnVals
             raise RuntimeError(
                 "Unexpected %r on line %d, Only variable declarations are allowed in this section"
                 % (lexeme[i], row[i])
             )
 
         if i >= maxlen:
+            returnVals[0] = True
+
+            returnVals.append("ERROR: Expected end of file")
+            return returnVals
             raise RuntimeError("Encountered end of file")
     return i
 
+
 def storeVariable(tline, line, rowNum):
-    global vars
+    global vars, returnVals
     i = 1
     maxlength = len(tline)
     if tline[i] == "VARIABLE":
         varName = line[i].strip()
         i += 1
     else:
+        returnVals[0] = True
+
+        returnVals.append("ERROR: Expected VARIABLE NAME on line " + str(rowNum))
+        return returnVals
         raise RuntimeError("Expected VARIABLE NAME on line %d" % (rowNum))
 
     if i >= maxlength:
@@ -195,19 +377,25 @@ def storeVariable(tline, line, rowNum):
     if tline[i] == "ITZ":
         i += 1
     else:
+        returnVals[0] = True
+
+        returnVals.append("ERROR: Expected 'ITZ' on line " + str(rowNum))
+        return returnVals
         raise RuntimeError("Expected 'ITZ' on line %d" % (rowNum))
 
     if i >= maxlength:
+        returnVals[0] = True
+
+        returnVals.append("ERROR: Variable must have a value!")
+        return returnVals
         raise RuntimeError("Variable must have a value!")
-    
+
     storing(varName, tline, line, i, rowNum)
-   
+
+
 def storing(varName, tline, line, i, rowNum):
-    if (
-        tline[i] == "NOOB"
-        or tline[i] == "YARN"
-        or tline[i] == "TROOF"
-    ):
+    global returnVals
+    if tline[i] == "NOOB" or tline[i] == "YARN" or tline[i] == "TROOF":
         type = tline[i]
         value = line[i]
     elif tline[i] == "NUMBAR":
@@ -218,22 +406,34 @@ def storing(varName, tline, line, i, rowNum):
         value = int(line[i])
     elif tline[i] == "VARIABLE":
         value, type = searchVarValue(line[i])
-    elif tline[i] == "BOOL_OPER" or tline[i] == "COMPARISON" or tline[i] == "MATH" or tline[i] == "CONCAT":
+    elif (
+        tline[i] == "BOOL_OPER"
+        or tline[i] == "COMPARISON"
+        or tline[i] == "MATH"
+        or tline[i] == "CONCAT"
+    ):
         value, type = expression(line, tline, i, rowNum)
     else:
+        returnVals[0] = True
+
+        returnVals.append(
+            "ERROR: Variable declaration can only be to a YARN, TROOF, NOOB etch"
+        )
+        return returnVals
         raise RuntimeError(
             "Variable declaration can only be to a YARN, TROOF, NOOB etch"
         )
-    
+
     for variable in vars:
         if variable.name == varName:
             variable.dataType = type
             variable.value = value
             return
-    vars.append(Variable(varName, type, value)) 
+    vars.append(Variable(varName, type, value))
+
 
 def statement(tokens, lexeme, row, i):
-    global vars
+    global vars, returnVals
     tline = []
     line = []
     rowNum = row[i]
@@ -242,13 +442,25 @@ def statement(tokens, lexeme, row, i):
         tline.append(tokens[i])
         line.append(lexeme[i])
         i += 1
-        if i == len(lexeme): break
+        if i == len(lexeme):
+            break
 
     if tline[0] == "PRINT":
         printLine(line, tline, i)
     elif tline[0] == "VAR_DEC":
+        returnVals[0] = True
+
+        returnVals.append(
+            "ERROR: Unexpected variable declaration at line " + str(rowNum)
+        )
+        return returnVals
         raise RuntimeError("Unexpected variable declaration at line %d" % (rowNum))
-    elif tline[0] == "BOOL_OPER" or tline[0] == "COMPARISON" or tline[0] == "MATH" or tline[0] == "CONCAT":
+    elif (
+        tline[0] == "BOOL_OPER"
+        or tline[0] == "COMPARISON"
+        or tline[0] == "MATH"
+        or tline[0] == "CONCAT"
+    ):
         value, type = expression(line, tline, 0, rowNum)
         storeVariables("IT", type, value)
     elif tline[0] == "INPUT":
@@ -261,7 +473,9 @@ def statement(tokens, lexeme, row, i):
         explicitTypecasting(line, tline, 1, rowNum, 0)
     return i
 
+
 def expression(line, tline, i, rowNum):
+    global returnVals
     if tline[i] == "BOOL_OPER":
         value = boolOpRegion(line, tline, i, rowNum)
         type = "TROOF"
@@ -278,10 +492,25 @@ def expression(line, tline, i, rowNum):
         value = smoosh(line, tline, i, rowNum)
         type = "YARN"
     else:
-        raise RuntimeError("Encountered error in line %d, Expression %r does not exist!" % (rowNum, tline[i]))
+        returnVals[0] = True
+
+        returnVals.append(
+            "ERROR: Encountered error in line "
+            + str(rowNum)
+            + ", Expression "
+            + str(tline[i])
+            + " does not exist!"
+        )
+        return returnVals
+        raise RuntimeError(
+            "Encountered error in line %d, Expression %r does not exist!"
+            % (rowNum, tline[i])
+        )
     return value, type
 
+
 def smoosh(line, tline, i, rowNum):
+    global returnVals
     string = ""
     i += 1
     while i < len(line):
@@ -299,90 +528,205 @@ def smoosh(line, tline, i, rowNum):
             value, _ = expression(line, tline, i, rowNum)
             value = str(value)
         else:
-            raise RuntimeError("Unexpected %r in line %d. Expected a YARN, TROOF, VARIABLE, or EXPRESSION." % (tline[i], rowNum))
+            returnVals[0] = True
+
+            returnVals.append(
+                "ERROR: Unexpected "
+                + str(tline[i])
+                + " in line "
+                + str(rowNum)
+                + ". Expected a YARN, TROOF, VARIABLE, or EXPRESSION."
+            )
+            return returnVals
+            raise RuntimeError(
+                "Unexpected %r in line %d. Expected a YARN, TROOF, VARIABLE, or EXPRESSION."
+                % (tline[i], rowNum)
+            )
         string = string + value
         i += 1
         if i >= len(line):
             return string
         elif tline[i] == "COMMENT":
             return string
-        elif tline[i] != 'AN':
-            raise RuntimeError("Unexpected %r in line %d. Expected an AN or end of line" % (tline[i], rowNum))
+        elif tline[i] != "AN":
+            returnVals[0] = True
+
+            returnVals.append(
+                "ERROR: Unexpected "
+                + str(tline[i])
+                + " in line "
+                + str(rowNum)
+                + ". Expected AN or end of line"
+            )
+            return returnVals
+            raise RuntimeError(
+                "Unexpected %r in line %d. Expected an AN or end of line"
+                % (tline[i], rowNum)
+            )
         i += 1
     return string
 
+
 def variableLine(line, tline, i, rowNum):
-    #i = 1 because 0 = VAR
+    global returnVals
+    # i = 1 because 0 = VAR
     # print(line)
     if tline[i] == "R":
-        i+= 1
-        if tline[i] == "TYPECAST": #R MAEK
+        i += 1
+        if tline[i] == "TYPECAST":  # R MAEK
             varName = line[0].strip()
-            i+=1
-            
-            if tline[i] != "VARIABLE": raise RuntimeError("Unexpected %r in line %d. Expected a variable" % (tline[i], rowNum))
+            i += 1
+
+            if tline[i] != "VARIABLE":
+                returnVals[0] = True
+
+                returnVals.append(
+                    "ERROR: Unexpected "
+                    + str(tline[i])
+                    + " in line "
+                    + str(rowNum)
+                    + ". Expected a variable"
+                )
+                return returnVals
+                raise RuntimeError(
+                    "Unexpected %r in line %d. Expected a variable" % (tline[i], rowNum)
+                )
 
             var2 = line[i]
-            i+=1 #type2
-            if tline[i] != "DATA_TYPE": raise RuntimeError("Unexpected %r in line %d. Expected a data type" % (tline[i], rowNum))
+            i += 1  # type2
+            if tline[i] != "DATA_TYPE":
+                returnVals[0] = True
+
+                returnVals.append(
+                    "ERROR: Unexpected " + str(tline[i]) + " in line " + str(rowNum)
+                )
+                return returnVals
+                raise RuntimeError(
+                    "Unexpected %r in line %d. Expected a data type"
+                    % (tline[i], rowNum)
+                )
 
             value, type = searchVarValue(var2)
             storeVariables(varName, line[i], typeCasting(value, type, line[i], rowNum))
             return
-        
+
         storing(line[0].strip(), tline, line, i, rowNum)
-    elif tline[i] == "RECASTMAGIC": #IS NOW A
+    elif tline[i] == "RECASTMAGIC":  # IS NOW A
         varName = line[0].strip()
-        i+=1
-        if tline[i] != "DATA_TYPE": raise RuntimeError("Unexpected %r in line %d. Expected a data type" % (tline[i], rowNum))
+        i += 1
+        if tline[i] != "DATA_TYPE":
+            returnVals[0] = True
+
+            returnVals.append(
+                "ERROR: Unexpected "
+                + str(tline[i])
+                + " in line "
+                + str(rowNum)
+                + ". Expected a data type"
+            )
+            return returnVals
+            raise RuntimeError(
+                "Unexpected %r in line %d. Expected a data type" % (tline[i], rowNum)
+            )
 
         value, type = searchVarValue(varName)
         type2 = line[i]
         storeVariables(varName, type2, typeCasting(value, type, type2, rowNum))
         # printVariables()
     else:
+        returnVals[0] = True
+
+        returnVals.append(
+            "ERROR: Unexpected " + str(tline[i]) + " in line " + str(rowNum)
+        )
+        return returnVals
         raise RuntimeError("Unexpected %r in line %d" % (tline[i], rowNum))
 
+
 def explicitTypecasting(line, tline, i, rowNum):
-    #i == 1
+    global returnVals
+    # i == 1
     if tline[i] != "VARIABLE":
-        raise RuntimeError("Unexpected %r in line %d. Expected variable" % (tline[i], i))
+        returnVals[0] = True
+
+        returnVals.append(
+            "ERROR: Unexpected "
+            + str(tline[i])
+            + " in line "
+            + str(i)
+            + ". Expected a variable"
+        )
+        return returnVals
+        raise RuntimeError(
+            "Unexpected %r in line %d. Expected variable" % (tline[i], i)
+        )
     varName = line[i]
     value, type = searchVarValue(line[i])
     i += 1
-    if tline[i] == "A": i += 1
-    if tline[i] != "DATA_TYPE": raise RuntimeError("Unexpected %r in line %d. Expected data type")
+    if tline[i] == "A":
+        i += 1
+    if tline[i] != "DATA_TYPE":
+        returnVals[0] = True
+
+        returnVals.append("ERROR: Unexpected " + str(tline[i]) + " in line " + str(i))
+        return returnVals
+        raise RuntimeError("Unexpected %r in line %d. Expected data type")
     storeVariable("IT", line[i], typeCasting(value, type, line[i], rowNum))
 
+
 def getInput(line, tline, i, rowNum):
+    global returnVals
     i += 1
     if tline[i] == "VARIABLE":
         varName = line[i]
         inputSTR = input("")
         storeVariables(varName, "YARN", inputSTR)
     else:
+        returnVals[0] = True
+
+        returnVals.append(
+            "ERROR: Error in line "
+            + str(rowNum)
+            + ", expected VARIABLE instead of "
+            + str(line[i])
+        )
+        return returnVals
         raise RuntimeError(
             "Error in line %d, expected VARIABLE instead of %r" % (rowNum, line[i])
         )
 
+
 def comparison(line, tline, i, rowNum):
+    global returnVals
     compQ = []
     # print(line)
     if line[i] == "BOTH SAEM":
         i += 1
         if tline[i] == "NUMBR" or tline[i] == "NUMBAR":
-            if tline[i] == "NUMBR": compQ.append([tline[i], int(line[i])]) 
-            else: compQ.append([tline[i], float(line[i])])
+            if tline[i] == "NUMBR":
+                compQ.append([tline[i], int(line[i])])
+            else:
+                compQ.append([tline[i], float(line[i])])
             i += 1
         elif tline[i] == "VARIABLE":
             value, type = searchVarValue(line[i])
             compQ.append([type, value])
             i += 1
         else:
+            returnVals[0] = True
+
+            returnVals.append(
+                "ERROR: Expected NUMBR, NUMBAR, or VARIABLE at line " + str(rowNum)
+            )
+            return returnVals
             raise RuntimeError(
                 "Expected NUMBR, NUMBAR, or VARIABLE at line %d" % (rowNum)
             )
         if tline[i] != "AN":
+            returnVals[0] = True
+
+            returnVals.append("ERROR: Expected AN at line " + str(rowNum))
+            return returnVals
             raise RuntimeError("Expected AN at line %d" % (rowNum))
         i += 1
 
@@ -397,38 +741,75 @@ def comparison(line, tline, i, rowNum):
                 compQ.append([type, value])
                 i += 1
             else:
+                returnVals[0] = True
+
+                returnVals.append(
+                    "Expected NUMBR, NUMBAR, or VARIABLE at line" + str(rowNum)
+                )
+                return returnVals
                 raise RuntimeError(
                     "Expected NUMBR, NUMBAR, or VARIABLE at line %d" % (rowNum)
                 )
             if compQ[0][1] != compQ[2][1]:
+                returnVals[0] = True
+
+                returnVals.append(
+                    "Value mismatch - operand 1 and 2 ("
+                    + str(compQ[0][1])
+                    + " and "
+                    + str(compQ[2][1])
+                    + ") must be same"
+                )
+                return returnVals
                 raise RuntimeError(
                     "Value mismatch - operand 1 and 2 (%r and %r) must be same"
                     % (compQ[0][1], compQ[2][1])
                 )
             if tline[i] != "AN":
+                returnVals[0] = True
+
+                returnVals.append("ERROR: Expected AN at line " + str(rowNum))
+                return returnVals
                 raise RuntimeError("Expected AN at line %d" % (rowNum))
             i += 1
             if tline[i] == "NUMBR" or tline[i] == "NUMBAR":
-                if tline[i] == "NUMBR": compQ.append([tline[i], int(line[i])]) 
-                else: compQ.append([tline[i], float(line[i])])
+                if tline[i] == "NUMBR":
+                    compQ.append([tline[i], int(line[i])])
+                else:
+                    compQ.append([tline[i], float(line[i])])
                 i += 1
             elif tline[i] == "VARIABLE":
                 value, type = searchVarValue(line[i])
                 compQ.append([type, value])
                 i += 1
             else:
+                returnVals[0] = True
+
+                returnVals.append(
+                    "Expected NUMBR, NUMBAR, VARIABLE at line" + str(rowNum)
+                )
+                return returnVals
                 raise RuntimeError(
                     "Expected NUMBR, NUMBAR, or VARIABLE at line %d" % (rowNum)
                 )
         elif tline[i] == "NUMBR" or tline[i] == "NUMBAR":
-            if tline[i] == "NUMBR": compQ.append([tline[i], int(line[i])]) 
-            else: compQ.append([tline[i], float(line[i])])
+            if tline[i] == "NUMBR":
+                compQ.append([tline[i], int(line[i])])
+            else:
+                compQ.append([tline[i], float(line[i])])
             i += 1
         elif tline[i] == "VARIABLE":
             value, type = searchVarValue(line[i])
             compQ.append([type, value])
             i += 1
         else:
+            returnVals[0] = True
+
+            returnVals.append(
+                "Expected NUMBR, NUMBAR, VARIABLE, BIGGR OF, or SMALLR OF at line"
+                + str(rowNum)
+            )
+            return returnVals
             raise RuntimeError(
                 "Expected NUMBR, NUMBAR, VARIABLE, BIGGR OF, or SMALLR OF at line %d"
                 % (rowNum)
@@ -436,6 +817,15 @@ def comparison(line, tline, i, rowNum):
         # print(compQ)
         if compQ[1] == "BIGGR OF":
             if compQ[2][0] != compQ[3][0]:
+                returnVals[0] = True
+
+                returnVals.append(
+                    "Type mismatch - cannot compare "
+                    + str(compQ[0][0])
+                    + " and "
+                    + str(compQ[1][0])
+                )
+                return returnVals
                 raise RuntimeError(
                     "Type mismatch - cannot compare %r and %r"
                     % (compQ[0][0], compQ[1][0])
@@ -451,9 +841,22 @@ def comparison(line, tline, i, rowNum):
                 else:
                     return "FAIL"
             else:
+                returnVals[0] = True
+
+                returnVals.append("ERROR: Unexpected type " + str(compQ[2][0]))
+                return returnVals
                 raise RuntimeError("Unexpected type %r" % (compQ[2][0]))
         elif compQ[1] == "SMALLR OF":
             if compQ[2][0] != compQ[3][0]:
+                returnVals[0] = True
+
+                returnVals.append(
+                    "Type mismatch - cannot compare "
+                    + str(compQ[0][0])
+                    + " and "
+                    + str(compQ[1][0])
+                )
+                return returnVals
                 raise RuntimeError(
                     "Type mismatch - cannot compare %r and %r"
                     % (compQ[0][0], compQ[1][0])
@@ -469,9 +872,22 @@ def comparison(line, tline, i, rowNum):
                 else:
                     return "FAIL"
             else:
+                returnVals[0] = True
+
+                returnVals.append("ERROR: Unexpected type " + str(compQ[2][0]))
+                return returnVals
                 raise RuntimeError("Unexpected type %r" % (compQ[2][0]))
         else:
             if compQ[0][0] != compQ[1][0]:
+                returnVals[0] = True
+
+                returnVals.append(
+                    "Type mismatch - cannot compare "
+                    + str(compQ[0][0])
+                    + " and "
+                    + str(compQ[1][0])
+                )
+                return returnVals
                 raise RuntimeError(
                     "Type mismatch - cannot compare %r and %r"
                     % (compQ[0][0], compQ[1][0])
@@ -484,19 +900,31 @@ def comparison(line, tline, i, rowNum):
     elif line[i] == "DIFFRINT":
         i += 1
         if tline[i] == "NUMBR" or tline[i] == "NUMBAR":
-            if tline[i] == "NUMBR": compQ.append([tline[i], int(line[i])])
-            else: compQ.append([tline[i], float(line[i])])
+            if tline[i] == "NUMBR":
+                compQ.append([tline[i], int(line[i])])
+            else:
+                compQ.append([tline[i], float(line[i])])
             i += 1
         elif tline[i] == "VARIABLE":
             value, type = searchVarValue(line[i])
             compQ.append([type, value])
             i += 1
         else:
+            returnVals[0] = True
+
+            returnVals.append(
+                "Expected NUMBR, NUMBAR, or VARIABLE at line " + str(rowNum)
+            )
+            return returnVals
             raise RuntimeError(
                 "Expected NUMBR, NUMBAR, or VARIABLE at line %d" % (rowNum)
             )
-        
+
         if tline[i] != "AN":
+            returnVals[0] = True
+
+            returnVals.append("ERROR: Expected AN at line " + str(rowNum))
+            return returnVals
             raise RuntimeError("Expected AN at line %d" % (rowNum))
         i += 1
         if line[i] == "BIGGR OF" or line[i] == "SMALLR OF":
@@ -510,15 +938,37 @@ def comparison(line, tline, i, rowNum):
                 compQ.append([type, value])
                 i += 1
             else:
+                returnVals[0] = True
+
+                returnVals.append(
+                    "Expected NUMBR, NUMBAR, or VARIABLE at line " + str(rowNum)
+                )
+                return returnVals
                 raise RuntimeError(
                     "Expected NUMBR, NUMBAR, or VARIABLE at line %d" % (rowNum)
                 )
             if compQ[0][1] != compQ[2][1]:
+                returnVals[0] = True
+
+                returnVals.append(
+                    "Value mismatch on line "
+                    + str(rowNum)
+                    + "("
+                    + str(compQ[0][1])
+                    + " and "
+                    + str(compQ[2][1])
+                    + ") must be same"
+                )
+                return returnVals
                 raise RuntimeError(
                     "Value mismatch on line %d (%r and %r) must be same"
                     % (rowNum, compQ[0][1], compQ[2][1])
                 )
             if tline[i] != "AN":
+                returnVals[0] = True
+
+                returnVals.append("ERROR: Expected AN at line" + str(rowNum))
+                return returnVals
                 raise RuntimeError("Expected AN at line %d" % (rowNum))
             i += 1
             if tline[i] == "NUMBR" or tline[i] == "NUMBAR":
@@ -529,18 +979,33 @@ def comparison(line, tline, i, rowNum):
                 compQ.append([type, value])
                 i += 1
             else:
+                returnVals[0] = True
+
+                returnVals.append(
+                    "Expected NUMBR, NUMBAR, or VARIABLE at line " + str(rowNum)
+                )
+                return returnVals
                 raise RuntimeError(
                     "Expected NUMBR, NUMBAR, or VARIABLE at line %d" % (rowNum)
                 )
         elif tline[i] == "NUMBR" or tline[i] == "NUMBAR":
-            if tline[i] == "NUMBR": compQ.append([tline[i], int(line[i])]) 
-            else: compQ.append([tline[i], float(line[i])])
+            if tline[i] == "NUMBR":
+                compQ.append([tline[i], int(line[i])])
+            else:
+                compQ.append([tline[i], float(line[i])])
             i += 1
         elif tline[i] == "VARIABLE":
             value, type = searchVarValue(line[i])
             compQ.append([type, value])
             i += 1
         else:
+            returnVals[0] = True
+
+            returnVals.append(
+                "Expected NUMBR, NUMBAR, VARIABLE, BIGGR OF, or SMALLR OF at line "
+                + str(rowNum)
+            )
+            return returnVals
             raise RuntimeError(
                 "Expected NUMBR, NUMBAR, VARIABLE, BIGGR OF, or SMALLR OF at line %d"
                 % (rowNum)
@@ -548,6 +1013,15 @@ def comparison(line, tline, i, rowNum):
         # print(compQ)
         if compQ[1] == "BIGGR OF":
             if compQ[2][0] != compQ[3][0]:
+                returnVals[0] = True
+
+                returnVals.append(
+                    "Type mismatch - cannot compare "
+                    + str(compQ[0][0])
+                    + " and "
+                    + str(compQ[1][0])
+                )
+                return returnVals
                 raise RuntimeError(
                     "Type mismatch - cannot compare %r and %r"
                     % (compQ[0][0], compQ[1][0])
@@ -563,9 +1037,22 @@ def comparison(line, tline, i, rowNum):
                 else:
                     return "FAIL"
             else:
+                returnVals[0] = True
+
+                returnVals.append("ERROR: Unexpected type " + str(compQ[2][0]))
+                return returnVals
                 raise RuntimeError("Unexpected type %r" % (compQ[2][0]))
         elif compQ[1] == "SMALLR OF":
             if compQ[2][0] != compQ[3][0]:
+                returnVals[0] = True
+
+                returnVals.append(
+                    "Type mismatch - cannot compare "
+                    + str(compQ[0][0])
+                    + " and "
+                    + str(compQ[1][0])
+                )
+                return returnVals
                 raise RuntimeError(
                     "Type mismatch - cannot compare %r and %r"
                     % (compQ[0][0], compQ[1][0])
@@ -581,9 +1068,22 @@ def comparison(line, tline, i, rowNum):
                 else:
                     return "FAIL"
             else:
+                returnVals[0] = True
+
+                returnVals.append("ERROR: Unexpected type " + str(compQ[2][0]))
+                return returnVals
                 raise RuntimeError("Unexpected type %r" % (compQ[2][0]))
         else:
             if compQ[0][0] != compQ[1][0]:
+                returnVals[0] = True
+
+                returnVals.append(
+                    "Type mismatch - cannot compare "
+                    + str(compQ[0][0])
+                    + " and "
+                    + str(compQ[1][0])
+                )
+                return returnVals
                 raise RuntimeError(
                     "Type mismatch - cannot compare %r and %r"
                     % (compQ[0][0], compQ[1][0])
@@ -593,9 +1093,15 @@ def comparison(line, tline, i, rowNum):
             else:
                 return "FAIL"
 
+
 # function for parsing prefix notation math operations
 def parse(tokens):
+    global returnVals
     if not tokens:
+        returnVals[0] = True
+
+        returnVals.append("ERROR: Unexpected end of statement.")
+        return returnVals
         raise RuntimeError("Unexpected end of statement.")
     else:
         token = tokens.popleft()
@@ -615,6 +1121,7 @@ def parse(tokens):
             return min(parse(tokens), parse(tokens))
         else:
             return token
+
 
 def mathOp(line, tline, i, rowNum):
     op = []
@@ -682,14 +1189,16 @@ def mathOp(line, tline, i, rowNum):
     else:
         return parse(deque(op))
 
+
 def boolOp(line, tline, i, rowNum):
+    global returnVals
     if tline[i] == "BOOL_OPER":
         opAddress = i
         boolQ = []
         i += 1
         i, boolQ0 = boolOp(line, tline, i, rowNum)
         boolQ.append(boolQ0)
-        
+
         if line[opAddress] == "NOT":
             if boolQ[0] == "WIN":
                 return i, "FAIL"
@@ -697,6 +1206,10 @@ def boolOp(line, tline, i, rowNum):
                 return i, "WIN"
         i += 1
         if tline[i] != "AN":
+            returnVals[0] = True
+
+            returnVals.append("ERROR: Expected AN at line " + str(rowNum))
+            return returnVals
             raise RuntimeError("Expected AN at line %d" % (rowNum))
         i += 1
         i, boolQ1 = boolOp(line, tline, i, rowNum)
@@ -727,9 +1240,17 @@ def boolOp(line, tline, i, rowNum):
     elif tline[i] == "TROOF":
         return i, line[i]
     else:
+        returnVals[0] = True
+
+        returnVals.append(
+            "ERROR: Unexpected " + str(line[i]) + " at line " + str(rowNum)
+        )
+        return returnVals
         raise RuntimeError("Unexpected %r at line %d, %d" % (line[i], rowNum))
 
+
 def boolOpRegion(line, tline, i, rowNum):
+    global returnVals
     if line[i] == "ALL OF" or line[i] == "ANY OF":
         if line[i] == "ALL OF":
             initCond = "WIN"
@@ -751,22 +1272,47 @@ def boolOpRegion(line, tline, i, rowNum):
             elif line[i] == "MKAY":
                 break
             else:
+                returnVals[0] = True
+
+                returnVals.append(
+                    "ERROR: Expected AN at line "
+                    + str(rowNum)
+                    + ", "
+                    + str(i)
+                    + " but encountered "
+                    + str(line[i])
+                )
+                return returnVals
                 raise RuntimeError(
                     "Expected AN at line %d, %d but encountered %r"
                     % (rowNum, i, line[i])
                 )
         if i != len(line) and tline[i] != "COMMENT":
+            returnVals[0] = True
+
+            returnVals.append(
+                "ERROR: Unexpected " + str(line[i + 1]) + " at line " + str(rowNum)
+            )
+            return returnVals
             raise RuntimeError("Unexpected %r in line %d" % (line[i + 1], rowNum))
         # print("i: "+str(i))
         return initCond
     else:
         j, k = boolOp(line, tline, i, rowNum)
         if j != len(line) - 1 and tline[j + 1] != "COMMENT":
+            returnVals[0] = True
+
+            returnVals.append(
+                "Error: Unexpected ", str(line[j + 1]), " in line ", str(rowNum)
+            )
+            return returnVals
             raise RuntimeError("Unexpected %r in line %d" % (line[j + 1], rowNum))
         else:
             return k
 
+
 def printLine(line, tline, rowNum):
+    global returnVals
     # assume muna na YARN lang ung priniprint
     string = ""
     for i in range(0, len(line)):
@@ -786,29 +1332,56 @@ def printLine(line, tline, rowNum):
             elif tline[i] == "TROOF":
                 value = line[i]
                 string = string + value
-            elif tline[i] == "BOOL_OPER" or tline[i] == "COMPARISON" or tline[i] == "MATH" or tline[i] == "CONCAT":
+            elif (
+                tline[i] == "BOOL_OPER"
+                or tline[i] == "COMPARISON"
+                or tline[i] == "MATH"
+                or tline[i] == "CONCAT"
+            ):
                 value, _ = expression(line, tline, i, rowNum)
                 string = string + str(value)
                 break
             else:
+                returnVals[0] = True
+
+                returnVals.append(
+                    "ERROR: Error: Type " + str(tline[i]) + " cannot be printed"
+                )
+                return returnVals
                 raise RuntimeError("Type %r cannot be printed" % (tline[i]))
 
     print(string)
+    returnVals.append(string)
+
 
 def searchVarValue(name):
-    global vars
+    global vars, returnVals
     name = name.strip()
     for variable in vars:
         if variable.name == name:
             return variable.value, variable.dataType
 
+    returnVals[0] = True
+
+    returnVals.append("ERROR: Variable " + str(name) + " does not exizt")
+    return returnVals
     raise RuntimeError("Variable %r does not exist" % (name))
+
 
 def typeCasting(value, type1, type2, rowNum):
     if type1 == "NOOB":
         if type2 == "TROOF":
             return False
         else:
+            returnVals[0] = True
+
+            returnVals.append(
+                "Encountered error in line "
+                + str(rowNum)
+                + ", cannot typecast NOOB to "
+                + str(type2)
+            )
+            return returnVals
             raise RuntimeError(
                 "Encountered error in line %d, cannot typecast NOOB to %r"
                 % (rowNum, type2)
@@ -827,6 +1400,15 @@ def typeCasting(value, type1, type2, rowNum):
                 else:
                     return "WIN"
             case _:
+                returnVals[0] = True
+
+                returnVals.append(
+                    "Encountered error in line "
+                    + str(rowNum)
+                    + ", cannot typecast NUMBR to "
+                    + str(type2)
+                )
+                return returnVals
                 raise RuntimeError(
                     "Encountered error in line %d, cannot typecast NUMBR to %r"
                     % (rowNum, type2)
@@ -846,6 +1428,15 @@ def typeCasting(value, type1, type2, rowNum):
             case "YARN":
                 return value
             case _:
+                returnVals[0] = True
+
+                returnVals.append(
+                    "Encountered error in line "
+                    + str(rowNum)
+                    + ", cannot typecast TROOF to "
+                    + str(type2)
+                )
+                return returnVals
                 raise RuntimeError(
                     "Encoutnered error in line %d, cannot typecast TROOF to %r"
                     % (rowNum, type2)
@@ -857,6 +1448,15 @@ def typeCasting(value, type1, type2, rowNum):
                 if bool(re.search(r"-?\d(\d)*", value)):
                     return int(value)
                 else:
+                    returnVals[0] = True
+
+                    returnVals.append(
+                        "Encountered error in line "
+                        + str(rowNum)
+                        + ", cannot typecast YARN to "
+                        + str(type2)
+                    )
+                    return returnVals
                     raise RuntimeError(
                         "Encountered error in line %d, cannot typecast YARN to %r"
                         % (rowNum, type2)
@@ -865,6 +1465,15 @@ def typeCasting(value, type1, type2, rowNum):
                 if bool(re.search(r"-?\d(\d)*\.\d(\d)*", value)):
                     return float(value)
                 else:
+                    returnVals[0] = True
+
+                    returnVals.append(
+                        "Encountered error in line "
+                        + str(rowNum)
+                        + ", cannot typecast YARN to "
+                        + str(type2)
+                    )
+                    return returnVals
                     raise RuntimeError(
                         "Encountered error in line %d, cannot typecast YARN to %r"
                         % (rowNum, type2)
@@ -875,10 +1484,20 @@ def typeCasting(value, type1, type2, rowNum):
                 else:
                     return "WIN"
             case _:
+                returnVals[0] = True
+
+                returnVals.append(
+                    "Encountered error in line "
+                    + str(rowNum)
+                    + ", cannot typecast YARN to "
+                    + str(type2)
+                )
+                return returnVals
                 raise RuntimeError(
                     "Encountered error in line %d, cannot typecast YARN to %r"
                     % (rowNum, type2)
                 )
+
 
 def printVariables():
     global vars
@@ -888,6 +1507,7 @@ def printVariables():
         print(variable.value)
         print("")
 
+
 def storeVariables(varName, type, newVal):
     global vars
     for variable in vars:
@@ -895,4 +1515,8 @@ def storeVariables(varName, type, newVal):
             variable.dataType = type
             variable.value = newVal
             return
+    # returnVals[0] = True
+    #
+    # returnVals.append("ERROR: Variable " + str(varName) + " does not exizt")
+    # return returnVals
     return RuntimeError("Variable %r does not exist")

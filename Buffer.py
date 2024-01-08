@@ -1,24 +1,56 @@
 class Buffer:
-    def load_buffer(self):
-        arq = open("sample_lolcodes/hello_world.lol", "r")
-        text = arq.readline()
-
-        buffer = []
-        cont = 1
-
-        # The buffer size can be changed by changing cont
-        while text != "":
-            buffer.append(text)
+    def load_buffer(self, path, mode):
+        if mode == 1:
+            print("THIS IS THE MODE: ", mode)
+            arq = open(path, "r")
             text = arq.readline()
-            cont += 1
+            print(text)
 
-            if cont == 10 or text == "":
-                # Return a full buffer
-                buf = "".join(buffer)
-                cont = 1
-                yield buf
+            buffer = []
+            cont = 1
 
-                # Reset the buffer
-                buffer = []
+            # The buffer size can be changed by changing cont
+            while text != "":
+                buffer.append(text)
+                text = arq.readline()
+                cont += 1
 
-        arq.close()
+                if cont == 10 or text == "":
+                    # Return a full buffer
+                    buf = "".join(buffer)
+                    cont = 1
+                    yield buf
+
+                    # Reset the buffer
+                    buffer = []
+
+            arq.close()
+        else:
+            print("THIS IS THE MODE: ", mode)
+            arq = open(path, "r")
+            text = arq.readline()
+
+            buffer = []
+            cont = 1
+
+            # The buffer size can be changed by changing cont
+            while text != "":
+                buffer.append(text)
+                text = arq.readline()
+                cont += 1
+
+                if cont == 10 or text == "":
+                    # Return a full buffer
+                    buf = "".join(buffer)
+                    cont = 1
+                    yield buf
+
+                    # Reset the buffer
+                    buffer = []
+
+            # reset the file pointer to get all content of file. will be used to display content of file in UI
+            arq.seek(0)
+            whole_file = arq.read()
+            arq.close()
+
+            return whole_file
